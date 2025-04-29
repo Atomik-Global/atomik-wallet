@@ -1,0 +1,7 @@
+{
+  "name": "atomik-wallet",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
