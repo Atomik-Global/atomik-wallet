@@ -12,9 +12,13 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@aparajita/capacitor-biometric-auth": "^9.0.0",
+    "@aparajita/capacitor-secure-storage": "^6.0.1",
     "@capacitor/app": "7.0.1",
+    "@capacitor/clipboard": "^7.0.1",
     "@capacitor/core": "7.2.0",
     "@capacitor/haptics": "7.0.1",
+    "@capacitor/ios": "7.2.0",
     "@capacitor/keyboard": "7.0.1",
     "@capacitor/status-bar": "7.0.1",
     "@ionic/vue": "^8.0.0",
@@ -30,7 +34,6 @@
     "@vue/eslint-config-typescript": "^12.0.0",
     "@vue/test-utils": "^2.3.0",
     "cypress": "^13.5.0",
-    "eslint": "^8.35.0",
     "eslint-plugin-vue": "^9.9.0",
     "jsdom": "^22.1.0",
     "terser": "^5.4.0",

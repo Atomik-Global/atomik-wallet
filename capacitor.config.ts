@@ -1,9 +1,9 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
+  appId: 'org.atomiklabs.wallet',
   appName: 'atomik-wallet',
-  webDir: 'dist'
-};
+  webDir: 'dist',
+}
 
-export default config;
+export default config
