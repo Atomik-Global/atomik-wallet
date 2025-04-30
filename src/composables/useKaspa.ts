@@ -73,6 +73,8 @@ export const useKaspa = () => {
   }
 
   return {
+    isMainnet,
+    networkId,
     ticker,
     explorerUrl,
     generateMnemonic,

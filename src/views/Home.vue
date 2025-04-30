@@ -8,6 +8,7 @@ import {
 import { shortenHash, toHumanReadableDate } from '@/utils/helpers'
 import {
   IonButton,
+  IonChip,
   IonContent,
   IonHeader,
   IonIcon,
@@ -27,6 +28,7 @@ import {
   arrowUp,
   arrowUpCircleOutline,
   caretUp,
+  globeOutline,
 } from 'ionicons/icons'
 import { computed, onBeforeMount, ref } from 'vue'
 
@@ -68,7 +70,13 @@ const list = computed(() => {
           </div>
         </div>
         <div class="account-card mt-4">
-          <div>Primary Account</div>
+          <div class="account-card-header">
+            <div>Primary Account</div>
+            <IonChip :color="kaspa.isMainnet.value ? 'light' : 'warning'">
+              <IonIcon :icon="globeOutline"></IonIcon>
+              <IonLabel>{{ kaspa.networkId.value }}</IonLabel>
+            </IonChip>
+          </div>
           <div class="balance">
             <span>1,000,000</span>
             <span class="balance-unit">{{ kaspa.ticker.value }}</span>
@@ -203,16 +211,19 @@ const list = computed(() => {
   color: var(--ion-text-color-step-200);
 }
 
-.account-cards {
-  margin-top: 1rem;
-}
-
 .account-card {
   position: relative;
   padding: 1rem;
   border-radius: 20px 20px 0px;
   color: var(--ion-text-color-step-950);
   background-color: var(--ion-background-color-step-900);
+}
+
+.account-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-transform: capitalize;
 }
 
 .account-card .balance {
@@ -259,7 +270,7 @@ const list = computed(() => {
 
 .account-card-actions::before {
   content: '';
-  height: 57.4%;
+  height: 62.4%;
   width: 100%;
   position: absolute;
   bottom: 0;
@@ -269,7 +280,7 @@ const list = computed(() => {
 
 .account-card-actions::after {
   content: '';
-  height: 57.4%;
+  height: 62.4%;
   width: 100%;
   position: absolute;
   bottom: 0;
