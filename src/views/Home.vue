@@ -114,8 +114,8 @@ const list = computed(() => {
           </IonSegment>
         </div>
         <IonSegmentView class="mt-4">
-          <IonSegmentContent id="history" class="expand-scroll">
-            <IonList lines="full">
+          <IonSegmentContent id="history" class="expand-scroll mt-4">
+            <IonList lines="inset">
               <RecycleScroller
                 class="scroller"
                 page-mode
@@ -151,8 +151,8 @@ const list = computed(() => {
               </RecycleScroller>
             </IonList>
           </IonSegmentContent>
-          <IonSegmentContent id="utxo" class="expand-scroll">
-            <IonList lines="full">
+          <IonSegmentContent id="utxo" class="expand-scroll mt-4">
+            <IonList lines="inset">
               <RecycleScroller
                 class="scroller"
                 page-mode
