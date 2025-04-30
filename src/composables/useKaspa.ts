@@ -73,6 +73,8 @@ export const useKaspa = () => {
   }
 
   return {
+    ticker,
+    explorerUrl,
     generateMnemonic,
     createWalletFromSeed,
   }

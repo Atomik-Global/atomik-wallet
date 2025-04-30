@@ -34,11 +34,18 @@ import '@ionic/vue/css/palettes/dark.system.css'
 /* Theme variables */
 import './theme/variables.css'
 
+/* 3rd party dependencies */
+// @ts-ignore
+import { RecycleScroller } from 'vue-virtual-scroller'
+import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
+
 const app = createApp(App)
   .use(IonicVue, {
     mode: 'ios',
   })
   .use(router)
+
+app.component('RecycleScroller', RecycleScroller)
 
 router.isReady().then(() => {
   app.mount('#app')
