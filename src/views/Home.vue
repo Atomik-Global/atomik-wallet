@@ -2,10 +2,15 @@
 import KaspaAddress from '@/components/KaspaAddress.vue'
 import { useKaspa, WalletAccount } from '@/composables/useKaspa'
 import {
+  GetFullTransactionResponse,
+  GetUtxoResponse,
+  useKaspaRest,
+} from '@/composables/useKaspaRest'
+import {
   K_ACCOUNT_PRIMARY,
   useSecureStorage,
 } from '@/composables/useSecureStorage'
-import { shortenHash, toHumanReadableDate } from '@/utils/helpers'
+import { shortenHash } from '@/utils/helpers'
 import {
   IonButton,
   IonChip,
@@ -30,29 +35,86 @@ import {
   caretUp,
   globeOutline,
 } from 'ionicons/icons'
-import { computed, onBeforeMount, ref } from 'vue'
+import { computed, onBeforeMount, onUnmounted, ref } from 'vue'
 
 const storage = useSecureStorage()
 const address = ref('')
 const kaspa = useKaspa()
+const kaspaRest = useKaspaRest()
+const balance = ref<number>(0)
+const utxos = ref<GetUtxoResponse[]>([])
+const transactions = ref<GetFullTransactionResponse[]>([])
+
+const mappedTransactions = computed(() => {
+  return transactions.value.map((e) => ({
+    ...e,
+    outputs: e.outputs.map((o) => ({
+      ...o,
+      amount: o.amount / kaspa.sompiPerKas(),
+    })),
+  }))
+})
+
+const mappedUtxos = computed(() => {
+  return utxos.value.map((e) => ({
+    id: e.outpoint.transactionId,
+    ...e,
+    utxoEntry: {
+      ...e.utxoEntry,
+      amount: Number(e.utxoEntry.amount) / kaspa.sompiPerKas(),
+    },
+  }))
+})
+
+async function fetchBalance(address: string) {
+  try {
+    const data = await kaspaRest.getBalance(address)
+    balance.value = data.balance / kaspa.sompiPerKas()
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+async function fetchUtxos(address: string) {
+  try {
+    const data = await kaspaRest.getUtxos(address)
+    utxos.value = data
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+async function fetchTransactions(address: string) {
+  try {
+    const data = await kaspaRest.getFullTransactionsPage(address)
+    transactions.value = data
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+function fetchAll() {
+  fetchBalance(address.value)
+  fetchUtxos(address.value)
+  fetchTransactions(address.value)
+}
 
 onBeforeMount(() => {
   storage.getItem(K_ACCOUNT_PRIMARY).then((account) => {
     address.value = (JSON.parse(account!) as WalletAccount).address
+    fetchAll()
+
+    kaspa.trackAddresses({
+      addresses: [address.value!],
+      onChangeBalance() {
+        fetchAll()
+      },
+    })
   })
 })
 
-const list = computed(() => {
-  return Array.from(Array(100)).map((_, i) => ({
-    id: i + 1,
-    kind: 'in',
-    amount: '0.24959996',
-    date: new Date().toISOString(),
-    ticker: kaspa.ticker.value,
-    address: address.value,
-    signature:
-      '8725fbf8fdcecb62438ae7f21e503894bb2e93cb308874b18739e8f70719196b',
-  }))
+onUnmounted(() => {
+  kaspa.untrackAddresses()
 })
 </script>
 
@@ -61,6 +123,7 @@ const list = computed(() => {
     <IonHeader translucent class="ion-no-border" collapse="condense">
       <IonToolbar />
     </IonHeader>
+
     <IonContent class="ion-padding" :scroll-y="false">
       <div class="scroll-container">
         <div class="mt-4">
@@ -78,7 +141,7 @@ const list = computed(() => {
             </IonChip>
           </div>
           <div class="balance">
-            <span>1,000,000</span>
+            <span>{{ balance }}</span>
             <span class="balance-unit">{{ kaspa.ticker.value }}</span>
           </div>
           <div class="account-card-footer">
@@ -115,17 +178,20 @@ const list = computed(() => {
         </div>
         <IonSegmentView class="mt-4">
           <IonSegmentContent id="history" class="expand-scroll mt-4">
-            <IonList lines="inset">
-              <RecycleScroller
+            <IonList>
+              <DynamicScroller
                 class="scroller"
                 page-mode
-                :items="list"
-                :item-size="list.length"
+                key-field="transaction_id"
+                :min-item-size="100"
+                :items="mappedTransactions"
               >
-                <template #default="{ item }">
+                <template
+                  #default="{ item }: { item: GetFullTransactionResponse }"
+                >
                   <IonItem button>
                     <IonIcon
-                      v-if="item.kind === 'in'"
+                      v-if="true"
                       aria-hidden="true"
                       :icon="arrowDownCircleOutline"
                       slot="start"
@@ -139,30 +205,41 @@ const list = computed(() => {
                     />
                     <IonLabel class="history">
                       <div class="history-header">
-                        <div>{{ item.amount }} {{ item.ticker }}</div>
-                        <div>{{ toHumanReadableDate(item.date) }}</div>
+                        <div>
+                          {{ item.outputs[0].amount }} {{ kaspa.ticker.value }}
+                        </div>
+                        <div>
+                          {{ item.accepting_block_time }}
+                        </div>
                       </div>
                       <div class="font-mono history-signature">
-                        {{ shortenHash(item.signature, 15) }}
+                        {{ shortenHash(item.transaction_id, 15) }}
                       </div>
                     </IonLabel>
                   </IonItem>
                 </template>
-              </RecycleScroller>
+              </DynamicScroller>
             </IonList>
           </IonSegmentContent>
           <IonSegmentContent id="utxo" class="expand-scroll mt-4">
-            <IonList lines="inset">
-              <RecycleScroller
+            <IonList>
+              <DynamicScroller
                 class="scroller"
                 page-mode
-                :items="list"
-                :item-size="list.length"
+                key-field="id"
+                :min-item-size="100"
+                :items="mappedUtxos"
               >
-                <template #default="{ item }">
+                <template
+                  #default="{
+                    item,
+                  }: {
+                    item: GetUtxoResponse & { id: string },
+                  }"
+                >
                   <IonItem button>
                     <IonIcon
-                      v-if="item.kind === 'in'"
+                      v-if="true"
                       aria-hidden="true"
                       :icon="arrowDownCircleOutline"
                       slot="start"
@@ -176,16 +253,18 @@ const list = computed(() => {
                     />
                     <IonLabel class="history">
                       <div class="history-header">
-                        <div>{{ item.amount }} {{ item.ticker }}</div>
-                        <div>{{ toHumanReadableDate(item.date) }}</div>
+                        <div>
+                          {{ item.utxoEntry.amount }} {{ kaspa.ticker.value }}
+                        </div>
+                        <div>{{ item.utxoEntry.blockDaaScore }}</div>
                       </div>
                       <div class="font-mono history-signature">
-                        {{ shortenHash(item.signature, 15) }}
+                        {{ shortenHash(item.outpoint.transactionId, 15) }}
                       </div>
                     </IonLabel>
                   </IonItem>
                 </template>
-              </RecycleScroller>
+              </DynamicScroller>
             </IonList>
           </IonSegmentContent>
         </IonSegmentView>

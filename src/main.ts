@@ -36,7 +36,7 @@ import './theme/variables.css'
 
 /* 3rd party dependencies */
 // @ts-ignore
-import { RecycleScroller } from 'vue-virtual-scroller'
+import { DynamicScroller } from 'vue-virtual-scroller'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 
 const app = createApp(App)
@@ -45,7 +45,7 @@ const app = createApp(App)
   })
   .use(router)
 
-app.component('RecycleScroller', RecycleScroller)
+app.component('DynamicScroller', DynamicScroller)
 
 router.isReady().then(() => {
   app.mount('#app')
