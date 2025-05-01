@@ -221,7 +221,10 @@ function openTxInBrowser(txId: string) {
             id="history"
             class="expand-scroll ion-content-scroll-host mt-4"
           >
-            <IonList>
+            <div v-if="transactions.length === 0" class="empty">
+              <div class="empty-text">No Records</div>
+            </div>
+            <IonList v-else-if="!isFetching">
               <DynamicScroller
                 key-field="transaction_id"
                 :min-item-size="100"
@@ -256,7 +259,7 @@ function openTxInBrowser(txId: string) {
                         <div>
                           {{ item.outputs[0].amount }} {{ kaspa.ticker.value }}
                         </div>
-                        <div>
+                        <div style="text-align: right">
                           {{
                             toHumanReadableDate(
                               blockTimeToDate(item.accepting_block_time),
@@ -271,40 +274,45 @@ function openTxInBrowser(txId: string) {
                       </div>
                     </IonLabel>
                   </IonItem>
-                  <IonItem v-else>
-                    <IonSkeletonText
-                      animated
-                      style="border-radius: 20px; height: 16px; width: 5%"
-                      slot="start"
-                    />
-                    <IonLabel class="history">
-                      <div class="history-header">
-                        <IonSkeletonText
-                          animated
-                          style="border-radius: 20px; height: 16px; width: 25%"
-                        />
-                        <IonSkeletonText
-                          animated
-                          style="border-radius: 20px; height: 16px; width: 25%"
-                        />
-                      </div>
-                      <div class="font-mono history-signature">
-                        <IonSkeletonText
-                          animated
-                          style="border-radius: 20px; height: 16px; width: 100%"
-                        />
-                      </div>
-                    </IonLabel>
-                  </IonItem>
                 </template>
               </DynamicScroller>
+            </IonList>
+            <IonList v-else>
+              <IonItem v-for="i in 5" :key="i">
+                <IonSkeletonText
+                  animated
+                  style="border-radius: 20px; height: 16px; width: 5%"
+                  slot="start"
+                />
+                <IonLabel class="history">
+                  <div class="history-header">
+                    <IonSkeletonText
+                      animated
+                      style="border-radius: 20px; height: 16px; width: 25%"
+                    />
+                    <IonSkeletonText
+                      animated
+                      style="border-radius: 20px; height: 16px; width: 25%"
+                    />
+                  </div>
+                  <div class="font-mono history-signature">
+                    <IonSkeletonText
+                      animated
+                      style="border-radius: 20px; height: 16px; width: 100%"
+                    />
+                  </div>
+                </IonLabel>
+              </IonItem>
             </IonList>
           </IonSegmentContent>
           <IonSegmentContent
             id="utxo"
             class="expand-scroll ion-content-scroll-host mt-4"
           >
-            <IonList>
+            <div v-if="utxos.length === 0" class="empty">
+              <div class="empty-text">No Records</div>
+            </div>
+            <IonList v-else-if="!isFetching">
               <DynamicScroller
                 key-field="id"
                 :min-item-size="100"
@@ -317,7 +325,7 @@ function openTxInBrowser(txId: string) {
                     item: GetUtxoResponse & { id: string },
                   }"
                 >
-                  <IonItem v-if="!isFetching" button>
+                  <IonItem button>
                     <IonIcon
                       v-if="true"
                       aria-hidden="true"
@@ -337,7 +345,7 @@ function openTxInBrowser(txId: string) {
                         <div>
                           {{ item.utxoEntry.amount }} {{ kaspa.ticker.value }}
                         </div>
-                        <div>
+                        <div style="text-align: right">
                           DAA
                           {{
                             formatBlockDaaScore(item.utxoEntry.blockDaaScore)
@@ -354,33 +362,35 @@ function openTxInBrowser(txId: string) {
                       </div>
                     </IonLabel>
                   </IonItem>
-                  <IonItem v-else>
-                    <IonSkeletonText
-                      animated
-                      style="border-radius: 20px; height: 16px; width: 5%"
-                      slot="start"
-                    />
-                    <IonLabel class="history">
-                      <div class="history-header">
-                        <IonSkeletonText
-                          animated
-                          style="border-radius: 20px; height: 16px; width: 25%"
-                        />
-                        <IonSkeletonText
-                          animated
-                          style="border-radius: 20px; height: 16px; width: 25%"
-                        />
-                      </div>
-                      <div class="font-mono history-signature">
-                        <IonSkeletonText
-                          animated
-                          style="border-radius: 20px; height: 16px; width: 100%"
-                        />
-                      </div>
-                    </IonLabel>
-                  </IonItem>
                 </template>
               </DynamicScroller>
+            </IonList>
+            <IonList v-else>
+              <IonItem v-for="i in 5" :key="i">
+                <IonSkeletonText
+                  animated
+                  style="border-radius: 20px; height: 16px; width: 5%"
+                  slot="start"
+                />
+                <IonLabel class="history">
+                  <div class="history-header">
+                    <IonSkeletonText
+                      animated
+                      style="border-radius: 20px; height: 16px; width: 25%"
+                    />
+                    <IonSkeletonText
+                      animated
+                      style="border-radius: 20px; height: 16px; width: 25%"
+                    />
+                  </div>
+                  <div class="font-mono history-signature">
+                    <IonSkeletonText
+                      animated
+                      style="border-radius: 20px; height: 16px; width: 100%"
+                    />
+                  </div>
+                </IonLabel>
+              </IonItem>
             </IonList>
           </IonSegmentContent>
         </IonSegmentView>
@@ -543,5 +553,13 @@ function openTxInBrowser(txId: string) {
 
 .ion-content-scroll-host::after {
   top: -1px;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
 }
 </style>
