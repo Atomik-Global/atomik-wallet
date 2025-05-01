@@ -26,9 +26,9 @@ async function copyToClipboard() {
     Copy to Clipboard
   </IonButton>
   <IonToast
-    color="dark"
     trigger="copy-toast-trigger"
     message="Item copied to clipboard"
-    :duration="500"
+    color="light"
+    :duration="1500"
   />
 </template>
