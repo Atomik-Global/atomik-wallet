@@ -51,7 +51,7 @@ async function storePhraseAndRedirect() {
     const toast = await toastController.create({
       message: 'Something went wrong',
       duration: 1500,
-      position: 'bottom',
+      color: 'light',
     })
     await toast.present()
   } finally {

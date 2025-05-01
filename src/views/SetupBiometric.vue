@@ -39,7 +39,7 @@ async function yes() {
     await toastController.create({
       message: (error as Error).message,
       duration: 1500,
-      position: 'bottom',
+      color: 'light',
     })
   } finally {
     isAuthenticating.value = false

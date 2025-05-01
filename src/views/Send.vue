@@ -155,6 +155,7 @@ async function paste() {
       header: 'Invalid address',
       message: 'Please paste a correct Kaspa address',
       duration: 1500,
+      color: 'light',
     })
 
     await toast.present()
@@ -231,6 +232,7 @@ async function submit() {
       header: 'Aborted',
       message: (error as Error).message || (error as string),
       duration: 1500,
+      color: 'light',
     })
     await toast.present()
   } finally {

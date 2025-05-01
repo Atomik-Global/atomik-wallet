@@ -37,7 +37,7 @@ export function useBiometric() {
       const toast = await toastController.create({
         message: 'Biometric unavailable',
         duration: 1500,
-        position: 'bottom',
+        color: 'light',
       })
 
       await toast.present()
@@ -67,7 +67,7 @@ export function useBiometric() {
       const toast = await toastController.create({
         message,
         duration: 1500,
-        position: 'bottom',
+        color: 'light',
       })
       await toast.present()
     }

@@ -27,7 +27,7 @@ async function handleCopy() {
   const toast = await toastController.create({
     message: 'Copied to clipboard',
     duration: 1500,
-    position: 'bottom',
+    color: 'light',
   })
 
   await toast.present()
