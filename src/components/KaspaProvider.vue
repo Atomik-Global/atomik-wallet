@@ -5,11 +5,16 @@ import { useKaspa } from '../composables/useKaspa'
 
 const kaspa = useKaspa()
 const isKaspaReady = ref(false)
-onBeforeMount(() =>
+onBeforeMount(() => {
+  // prevent rebuild if kaspa ready
+  if (isKaspaReady.value) {
+    return
+  }
+
   kaspa.init().then(() => {
     isKaspaReady.value = true
-  }),
-)
+  })
+})
 provide(injKaspa, kaspa)
 </script>
 
