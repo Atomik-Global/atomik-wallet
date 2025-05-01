@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { injKaspa, Kaspa } from '@/injectives'
+import { Browser } from '@capacitor/browser'
 import {
   IonButton,
   IonContent,
@@ -18,7 +19,7 @@ const kaspa = inject(injKaspa) as Kaspa
 const txId = computed(() => route.params.txId as string)
 
 function viewOnChain() {
-  window.open(`${kaspa.explorerUrl.value}/txs/${txId.value}`)
+  Browser.open({ url: `${kaspa.explorerUrl.value}/txs/${txId.value}` })
 }
 </script>
 

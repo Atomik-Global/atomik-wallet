@@ -19,6 +19,7 @@ import {
   toHumanReadableDate,
 } from '@/utils/helpers'
 import { App } from '@capacitor/app'
+import { Browser } from '@capacitor/browser'
 import {
   IonButton,
   IonChip,
@@ -168,7 +169,7 @@ async function handleRefresh(event: any) {
 const isAndroid = computed(() => isPlatform('android'))
 
 function openTxInBrowser(txId: string) {
-  window.open(`${kaspa.explorerUrl.value}/txs/${txId}`)
+  Browser.open({ url: `${kaspa.explorerUrl.value}/txs/${txId}` })
 }
 </script>
 
