@@ -96,6 +96,7 @@ export const useKaspa = () => {
     await rpc.value!.connect()
     await processor.value!.start()
     await context.value!.trackAddresses(addresses)
+
     trackedAddresses.value = addresses
     processor.value!.addEventListener((event) => {
       return addressEventListener({ event, onChangeBalance })

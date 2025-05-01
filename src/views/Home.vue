@@ -10,7 +10,11 @@ import {
   K_ACCOUNT_PRIMARY,
   useSecureStorage,
 } from '@/composables/useSecureStorage'
-import { shortenHash } from '@/utils/helpers'
+import {
+  blockTimeToDate,
+  shortenHash,
+  toHumanReadableDate,
+} from '@/utils/helpers'
 import {
   IonButton,
   IonChip,
@@ -35,7 +39,7 @@ import {
   caretUp,
   globeOutline,
 } from 'ionicons/icons'
-import { computed, onBeforeMount, onUnmounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 const storage = useSecureStorage()
 const address = ref('')
@@ -99,7 +103,7 @@ function fetchAll() {
   fetchTransactions(address.value)
 }
 
-onBeforeMount(() => {
+onMounted(() => {
   storage.getItem(K_ACCOUNT_PRIMARY).then((account) => {
     address.value = (JSON.parse(account!) as WalletAccount).address
     fetchAll()
@@ -113,9 +117,9 @@ onBeforeMount(() => {
   })
 })
 
-onUnmounted(() => {
-  kaspa.untrackAddresses()
-})
+// onUnmounted(() => {
+//   kaspa.untrackAddresses()
+// })
 </script>
 
 <template>
@@ -127,7 +131,7 @@ onUnmounted(() => {
     <IonContent class="ion-padding" :scroll-y="false">
       <div class="scroll-container">
         <div class="mt-4">
-          <div class="header">Wallet</div>
+          <div class="header">Wallets</div>
           <div class="address">
             <KaspaAddress :address="address" :shorten="6" />
           </div>
@@ -191,7 +195,9 @@ onUnmounted(() => {
                 >
                   <IonItem button>
                     <IonIcon
-                      v-if="true"
+                      v-if="
+                        item.outputs[0].script_public_key_address === address
+                      "
                       aria-hidden="true"
                       :icon="arrowDownCircleOutline"
                       slot="start"
@@ -209,7 +215,11 @@ onUnmounted(() => {
                           {{ item.outputs[0].amount }} {{ kaspa.ticker.value }}
                         </div>
                         <div>
-                          {{ item.accepting_block_time }}
+                          {{
+                            toHumanReadableDate(
+                              blockTimeToDate(item.accepting_block_time),
+                            )
+                          }}
                         </div>
                       </div>
                       <div class="font-mono history-signature">
@@ -349,7 +359,7 @@ onUnmounted(() => {
 
 .account-card-actions::before {
   content: '';
-  height: 62.4%;
+  height: 64.4%;
   width: 100%;
   position: absolute;
   bottom: 0;
@@ -359,7 +369,7 @@ onUnmounted(() => {
 
 .account-card-actions::after {
   content: '';
-  height: 62.4%;
+  height: 64.4%;
   width: 100%;
   position: absolute;
   bottom: 0;
@@ -372,7 +382,7 @@ onUnmounted(() => {
   position: relative;
   z-index: 10;
   margin-top: 0.75rem;
-  max-width: 180px;
+  max-width: 42%;
 }
 
 .history {

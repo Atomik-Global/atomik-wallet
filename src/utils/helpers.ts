@@ -57,9 +57,20 @@ export const formatCurrency = (
   }).format(parseFloat(value.toString()))
 }
 
-export const toHumanReadableDate = (value: string) => {
+export const toHumanReadableDate = (value: string | Date) => {
   return Intl.DateTimeFormat('en-US', {
     dateStyle: 'short',
     timeStyle: 'short',
   }).format(new Date(value))
+}
+
+export function blockTimeToDate(blockTime: number) {
+  // Check if the blockTime is in seconds (typical for Unix timestamps) or milliseconds
+  if (blockTime < 10000000000) {
+    // If it's less than 10 digits, assume it's in seconds and convert to milliseconds
+    blockTime *= 1000
+  }
+  // Create a new Date object using the blockTime (now in milliseconds)
+  const date = new Date(blockTime)
+  return date
 }

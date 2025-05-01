@@ -14,6 +14,7 @@
   "dependencies": {
     "@aparajita/capacitor-biometric-auth": "^9.0.0",
     "@aparajita/capacitor-secure-storage": "^6.0.1",
+    "@capacitor/android": "7.2.0",
     "@capacitor/app": "7.0.1",
     "@capacitor/clipboard": "^7.0.1",
     "@capacitor/core": "7.2.0",
