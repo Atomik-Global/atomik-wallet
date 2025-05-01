@@ -82,26 +82,28 @@ const mappedTransactions = computed(() => {
     ...e,
     outputs: e.outputs.map((o) => ({
       ...o,
-      amount: o.amount / kaspa.sompiPerKas(),
+      amount: kaspa.toKas(o.amount),
     })),
   }))
 })
 
 const mappedUtxos = computed(() => {
-  return utxos.value.map((e) => ({
-    id: e.outpoint.transactionId,
-    ...e,
-    utxoEntry: {
-      ...e.utxoEntry,
-      amount: Number(e.utxoEntry.amount) / kaspa.sompiPerKas(),
-    },
-  }))
+  return utxos.value
+    .map((e) => ({
+      id: e.outpoint.index,
+      ...e,
+      utxoEntry: {
+        ...e.utxoEntry,
+        amount: kaspa.toKas(e.utxoEntry.amount),
+      },
+    }))
+    .sort((a, b) => a.id - b.id)
 })
 
 async function fetchBalance(address: string) {
   try {
     const data = await kaspaRest.getBalance(address)
-    balanceStore.setBalance(data.balance / kaspa.sompiPerKas())
+    balanceStore.setBalance(kaspa.toKasRaw(data.balance))
   } catch (error) {
     console.error(error)
   }

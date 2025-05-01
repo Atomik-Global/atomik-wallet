@@ -123,8 +123,14 @@ export const useKaspa = () => {
     return kaspa.value!.kaspaToSompi(amount) ?? 0n
   }
 
-  function toKas(amount: string | bigint | Kaspa.HexString) {
-    return kaspa.value!.sompiToKaspaString(amount)
+  function toKas(amount: string | number | bigint | Kaspa.HexString) {
+    return kaspa.value!.sompiToKaspaString(
+      typeof amount === 'string' ? parseFloat(amount) : amount,
+    )
+  }
+
+  function toKasRaw(amount: string | number | bigint | Kaspa.HexString) {
+    return Number(amount) / sompiPerKas()
   }
 
   function sompiPerKas() {
@@ -234,6 +240,7 @@ export const useKaspa = () => {
     isValidAddress,
     toSompi,
     toKas,
+    toKasRaw,
     sompiPerKas,
     getFeeEstimate,
     getUtxoEntries,

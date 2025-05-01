@@ -103,9 +103,9 @@ const txMass = computed(() => {
 })
 
 const feeEstimate = computed(() => ({
-  low: (feeEstimateRaw.low * txMass.value) / kaspa.sompiPerKas(),
-  normal: (feeEstimateRaw.normal * txMass.value) / kaspa.sompiPerKas(),
-  high: (feeEstimateRaw.high * txMass.value) / kaspa.sompiPerKas(),
+  low: kaspa.toKasRaw(feeEstimateRaw.low * txMass.value),
+  normal: kaspa.toKasRaw(feeEstimateRaw.normal * txMass.value),
+  high: kaspa.toKasRaw(feeEstimateRaw.high * txMass.value),
 }))
 
 const isBalanceInsufficient = ref(false)
