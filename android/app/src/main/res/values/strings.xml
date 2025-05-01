@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">atomik-wallet</string>
-    <string name="title_activity_main">atomik-wallet</string>
+    <string name="app_name">Atomik Wallet</string>
+    <string name="title_activity_main">Atomik Wallet</string>
     <string name="package_name">org.atomiklabs.wallet</string>
     <string name="custom_url_scheme">org.atomiklabs.wallet</string>
 </resources>
