@@ -59,7 +59,7 @@ export const formatCurrency = (
 
 export const toHumanReadableDate = (value: string | Date) => {
   return Intl.DateTimeFormat('en-US', {
-    dateStyle: 'short',
+    dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(value))
 }

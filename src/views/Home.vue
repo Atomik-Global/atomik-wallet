@@ -25,6 +25,8 @@ import {
   IonLabel,
   IonList,
   IonPage,
+  IonRefresher,
+  IonRefresherContent,
   IonSegment,
   IonSegmentButton,
   IonSegmentContent,
@@ -97,10 +99,10 @@ async function fetchTransactions(address: string) {
   }
 }
 
-function fetchAll() {
-  fetchBalance(address.value)
-  fetchUtxos(address.value)
-  fetchTransactions(address.value)
+async function fetchAll() {
+  await fetchBalance(address.value)
+  await fetchUtxos(address.value)
+  await fetchTransactions(address.value)
 }
 
 onMounted(() => {
@@ -120,6 +122,11 @@ onMounted(() => {
 // onUnmounted(() => {
 //   kaspa.untrackAddresses()
 // })
+
+async function handleRefresh(event: any) {
+  await fetchAll()
+  event.target.complete()
+}
 </script>
 
 <template>
@@ -129,6 +136,10 @@ onMounted(() => {
     </IonHeader>
 
     <IonContent class="ion-padding" :scroll-y="false">
+      <IonRefresher slot="fixed" @ionRefresh="handleRefresh($event)">
+        <IonRefresherContent />
+      </IonRefresher>
+
       <div class="scroll-container">
         <div class="mt-4">
           <div class="header">Wallets</div>
