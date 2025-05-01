@@ -285,7 +285,7 @@ function openTxInBrowser(txId: string) {
             <IonList v-else>
               <DynamicScroller
                 key-field="transaction_id"
-                :min-item-size="100"
+                :min-item-size="50"
                 :items="mappedTransactions"
               >
                 <template
@@ -373,7 +373,7 @@ function openTxInBrowser(txId: string) {
             <IonList v-else>
               <DynamicScroller
                 key-field="id"
-                :min-item-size="100"
+                :min-item-size="50"
                 :items="mappedUtxos"
               >
                 <template
