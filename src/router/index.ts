@@ -46,6 +46,14 @@ const routes: Array<RouteRecordRaw> = [
       onboardedOnly: true,
     },
   },
+  {
+    path: '/home/send',
+    name: 'Send',
+    component: () => import('@/views/Send.vue'),
+    meta: {
+      onboardedOnly: true,
+    },
+  },
 ]
 
 const router = createRouter({

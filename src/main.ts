@@ -35,15 +35,19 @@ import '@ionic/vue/css/palettes/dark.system.css'
 import './theme/variables.css'
 
 /* 3rd party dependencies */
+import { createPinia } from 'pinia'
 // @ts-ignore
 import { DynamicScroller } from 'vue-virtual-scroller'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
+
+const pinia = createPinia()
 
 const app = createApp(App)
   .use(IonicVue, {
     mode: 'ios',
   })
   .use(router)
+  .use(pinia)
 
 app.component('DynamicScroller', DynamicScroller)
 

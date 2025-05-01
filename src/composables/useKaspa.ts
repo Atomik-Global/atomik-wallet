@@ -45,21 +45,21 @@ export const useKaspa = () => {
     context.value = new kas.UtxoContext({
       processor: processor.value,
     })
-  }
 
-  async function initIfNotInit() {
-    if (!rpc.value || !context.value || !processor.value) {
-      await init()
+    if (!rpc.value.isConnected) {
+      await rpc.value.connect()
+      if (processor.value.isActive) {
+        await processor.value.stop()
+        await processor.value.start()
+      }
     }
   }
 
   async function generateMnemonic() {
-    await initIfNotInit()
     return kaspa.value!.Mnemonic.random(12)
   }
 
   async function createWalletFromSeed(seed: string): Promise<WalletAccount> {
-    await initIfNotInit()
     const xprv = new kaspa.value!.XPrv(seed).derivePath("m/44'/23'/0'/0/0")
     const priv = xprv.toPrivateKey()
     const pubk = priv.toPublicKey()
@@ -91,9 +91,6 @@ export const useKaspa = () => {
     addresses,
     onChangeBalance,
   }: TrackAddressProps) {
-    await initIfNotInit()
-
-    await rpc.value!.connect()
     await processor.value!.start()
     await context.value!.trackAddresses(addresses)
 
@@ -104,8 +101,6 @@ export const useKaspa = () => {
   }
 
   async function untrackAddresses() {
-    await initIfNotInit()
-
     if (trackedAddresses.value.length === 0) {
       return
     }
@@ -121,7 +116,10 @@ export const useKaspa = () => {
     return address.startsWith(prefix)
   }
 
-  function toSompi(amount: string) {
+  function toSompi(amount: string | null | undefined) {
+    if (amount === null || amount === undefined) {
+      return 0n
+    }
     return kaspa.value!.kaspaToSompi(amount) ?? 0n
   }
 
@@ -133,7 +131,98 @@ export const useKaspa = () => {
     return 100_000_000
   }
 
+  async function getUtxoEntries(addresses: string[]) {
+    return rpc.value!.getUtxosByAddresses(addresses)
+  }
+
+  function estimateTransaction(settings: Kaspa.IGeneratorSettingsObject) {
+    return kaspa.value!.estimateTransactions({
+      ...settings,
+      networkId: networkId.value,
+    })
+  }
+
+  function createTransactions(settings: Kaspa.IGeneratorSettingsObject) {
+    return kaspa.value!.createTransactions({
+      ...settings,
+      networkId: networkId.value,
+    })
+  }
+
+  function createTransaction(data: {
+    entries: Kaspa.IUtxoEntry[]
+    outputs: Kaspa.IPaymentOutput[]
+    priorityFee: bigint
+    payload?: Kaspa.HexString | Uint8Array
+    sigOpCount?: number
+  }) {
+    return kaspa.value!.createTransaction(
+      data.entries,
+      data.outputs,
+      data.priorityFee,
+      data.payload,
+      data.sigOpCount,
+    )
+  }
+
+  function signTransaction(data: {
+    tx: Kaspa.Transaction
+    privateKey: (Kaspa.PrivateKey | Kaspa.HexString | Uint8Array)[]
+    verifySig: boolean
+  }) {
+    return kaspa.value!.signTransaction(
+      data.tx,
+      data.privateKey,
+      data.verifySig,
+    )
+  }
+
+  function calculateTransactionFee(tx: Kaspa.Transaction) {
+    return kaspa.value!.calculateTransactionFee(networkId.value, tx)
+  }
+
+  function calculateTransactionMass(tx: Kaspa.ITransaction) {
+    return kaspa.value!.calculateTransactionMass(networkId.value, tx)
+  }
+
+  async function getFeeEstimate() {
+    const { estimate } = await rpc.value!.getFeeEstimate()
+
+    return {
+      low: estimate.lowBuckets[0].feerate,
+      normal: estimate.normalBuckets[0].feerate,
+      high: estimate.priorityBucket.feerate,
+    }
+  }
+
+  async function transferKas(
+    data: Kaspa.IGeneratorSettingsObject,
+    privateKey: string,
+  ) {
+    const { transactions, summary } = await kaspa.value!.createTransactions({
+      ...data,
+      networkId: networkId.value,
+    })
+
+    if (transactions.length > 0) {
+      const firstTransaction = transactions[0]
+      firstTransaction.sign([privateKey])
+      await firstTransaction.submit(rpc.value!)
+    }
+
+    // Handle the remaining transactions, waiting for the `time-to-submit` event
+    for (let i = 1; i < transactions.length; i++) {
+      const transaction = transactions[i]
+      transaction.sign([privateKey])
+      await transaction.submit(rpc.value!)
+    }
+
+    return summary.finalTransactionId
+  }
+
   return {
+    init,
+    rpc,
     isMainnet,
     networkId,
     ticker,
@@ -146,6 +235,14 @@ export const useKaspa = () => {
     toSompi,
     toKas,
     sompiPerKas,
+    getFeeEstimate,
+    getUtxoEntries,
+    createTransaction,
+    transferKas,
+    calculateTransactionMass,
+    estimateTransaction,
+    createTransactions,
+    calculateTransactionFee,
   }
 }
 
@@ -166,4 +263,12 @@ interface TrackAddressProps {
 interface AddressEventListenerProps {
   event: Kaspa.UtxoProcessorEvent<keyof Kaspa.UtxoProcessorEventMap>
   onChangeBalance?: BalanceChangeCallback
+}
+
+interface TransferKasProps {
+  fromAddress: string
+  toAddress: string
+  amount: number
+  priority: 'low' | 'normal' | 'high'
+  privateKey: string
 }

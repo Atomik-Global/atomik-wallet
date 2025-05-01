@@ -17,6 +17,7 @@ async function copyToClipboard() {
 <template>
   <IonButton
     id="copy-toast-trigger"
+    color="dark"
     expand="block"
     fill="clear"
     @click="copyToClipboard"

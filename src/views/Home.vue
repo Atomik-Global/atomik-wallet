@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import KaspaAddress from '@/components/KaspaAddress.vue'
-import { useKaspa, WalletAccount } from '@/composables/useKaspa'
+import { WalletAccount } from '@/composables/useKaspa'
 import {
   GetFullTransactionResponse,
   GetUtxoResponse,
@@ -10,6 +10,8 @@ import {
   K_ACCOUNT_PRIMARY,
   useSecureStorage,
 } from '@/composables/useSecureStorage'
+import { injKaspa, Kaspa } from '@/injectives'
+import { useBalanceStore } from '@/stores/balance'
 import {
   blockTimeToDate,
   formatBlockDaaScore,
@@ -35,17 +37,19 @@ import {
   IonSkeletonText,
   IonToolbar,
   isPlatform,
+  useIonRouter,
 } from '@ionic/vue'
 import { arrowDown, arrowUp, caretUp, globeOutline } from 'ionicons/icons'
-import { computed, onBeforeMount, ref } from 'vue'
+import { computed, inject, onBeforeMount, ref } from 'vue'
 
+const balanceStore = useBalanceStore()
 const storage = useSecureStorage()
 const address = ref('')
-const kaspa = useKaspa()
+const kaspa = inject(injKaspa) as Kaspa
 const kaspaRest = useKaspaRest()
-const balance = ref<number>(0)
 const utxos = ref<GetUtxoResponse[]>([])
 const transactions = ref<GetFullTransactionResponse[]>([])
+const router = useIonRouter()
 
 const mappedTransactions = computed(() => {
   return transactions.value.map((e) => ({
@@ -71,7 +75,7 @@ const mappedUtxos = computed(() => {
 async function fetchBalance(address: string) {
   try {
     const data = await kaspaRest.getBalance(address)
-    balance.value = data.balance / kaspa.sompiPerKas()
+    balanceStore.setBalance(data.balance / kaspa.sompiPerKas())
   } catch (error) {
     console.error(error)
   }
@@ -131,6 +135,10 @@ async function handleRefresh(event: any) {
 }
 
 const isAndroid = computed(() => isPlatform('android'))
+
+function openTxInBrowser(txId: string) {
+  window.open(`${kaspa.explorerUrl.value}/txs/${txId}`)
+}
 </script>
 
 <template>
@@ -156,11 +164,13 @@ const isAndroid = computed(() => isPlatform('android'))
             <div>Primary Account</div>
             <IonChip :color="kaspa.isMainnet.value ? 'light' : 'warning'">
               <IonIcon :icon="globeOutline"></IonIcon>
-              <IonLabel>{{ kaspa.networkId.value }}</IonLabel>
+              <IonLabel>{{
+                kaspa.networkId.value.split('-').join(' ')
+              }}</IonLabel>
             </IonChip>
           </div>
           <div class="balance">
-            <span>{{ balance }}</span>
+            <span>{{ balanceStore.balance }}</span>
             <span class="balance-unit">{{ kaspa.ticker.value }}</span>
           </div>
           <div class="account-card-footer">
@@ -177,15 +187,20 @@ const isAndroid = computed(() => isPlatform('android'))
           </div>
           <div class="account-card-actions">
             <IonButton
-              router-link="/home/receive"
               size="large"
               color="light"
               shape="round"
               fill="outline"
+              @click="router.push('/home/receive')"
             >
               <IonIcon slot="icon-only" :icon="arrowDown" />
             </IonButton>
-            <IonButton color="light" shape="round" fill="solid">
+            <IonButton
+              color="light"
+              shape="round"
+              fill="solid"
+              @click="router.push('/home/send')"
+            >
               <IonIcon slot="start" :icon="arrowUp" />
               Send
             </IonButton>
@@ -215,7 +230,11 @@ const isAndroid = computed(() => isPlatform('android'))
                 <template
                   #default="{ item }: { item: GetFullTransactionResponse }"
                 >
-                  <IonItem v-if="!isFetching" button>
+                  <IonItem
+                    v-if="!isFetching"
+                    button
+                    @click="openTxInBrowser(item.transaction_id)"
+                  >
                     <IonIcon
                       v-if="
                         item.outputs[0].script_public_key_address === address

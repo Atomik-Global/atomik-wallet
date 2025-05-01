@@ -11,6 +11,8 @@ import {
   IonHeader,
   IonImg,
   IonPage,
+  IonSkeletonText,
+  IonText,
   IonTitle,
   IonToolbar,
 } from '@ionic/vue'
@@ -53,13 +55,14 @@ async function shareAddress() {
       </IonHeader>
 
       <div class="qrcode-wrapper">
-        <IonImg :src="qrcode" alt="QR Code" class="qrcode" />
+        <IonSkeletonText v-if="address.length === 0" class="qr-skeleton" />
+        <IonImg v-else :src="qrcode" alt="QR Code" class="qrcode" />
       </div>
       <div class="address-display">{{ address }}</div>
       <ClipboardCopy :item="address" />
 
       <div v-if="canShare" class="footer ion-padding">
-        <IonButton expand="block" @click="shareAddress"
+        <IonButton color="dark" expand="block" @click="shareAddress"
           >Share Address</IonButton
         >
       </div>
@@ -82,8 +85,17 @@ async function shareAddress() {
 
 .qrcode {
   border: 1px solid var(--ion-text-color-step-900);
-  overflow: hidden;
+}
+
+.qr-skeleton {
   width: 250px;
+  height: 250px;
+}
+
+.qr-skeleton,
+.qrcode {
+  width: 250px;
+  overflow: hidden;
   border-radius: 10px;
 }
 
@@ -101,5 +113,6 @@ async function shareAddress() {
   bottom: 0;
   left: 0;
   right: 0;
+  padding: 2rem;
 }
 </style>

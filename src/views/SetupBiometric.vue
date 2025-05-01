@@ -76,7 +76,12 @@ async function no() {
       </IonHeader>
 
       <div class="ion-padding action-wrapper">
-        <IonButton :disabled="isAuthenticating" expand="block" @click="yes">
+        <IonButton
+          color="dark"
+          :disabled="isAuthenticating"
+          expand="block"
+          @click="yes"
+        >
           <template v-if="!isAuthenticating"> Yes, please </template>
           <IonSpinner v-else name="dots" />
         </IonButton>

@@ -15,16 +15,19 @@ const router = useIonRouter()
     <IonContent class="ion-padding">
       <div class="container">
         <div class="actions ion-padding">
-          <IonButton expand="block" @click="router.push('/wallet/create')"
+          <IonButton
+            color="dark"
+            expand="block"
+            @click="router.push('/wallet/create')"
             >Create new Wallet</IonButton
           >
           <IonButton color="light" expand="block">Import from Seed</IonButton>
           <IonText>
             <p class="disclaimer">
               By using our services, you have agreed to our <br />
-              <IonText color="primary">Terms of Service</IonText>
+              <IonText color="dark">Terms of Service</IonText>
               and
-              <IonText color="primary">Privacy Policy</IonText>
+              <IonText color="dark">Privacy Policy</IonText>
             </p>
           </IonText>
         </div>

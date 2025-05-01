@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { IonApp, IonRouterOutlet } from '@ionic/vue'
+import KaspaProvider from './components/KaspaProvider.vue'
 import { useBiometric } from './composables/useBiometric'
 import { useSecureStorage } from './composables/useSecureStorage'
 
@@ -8,7 +9,9 @@ useBiometric()
 </script>
 
 <template>
-  <ion-app>
-    <ion-router-outlet />
-  </ion-app>
+  <KaspaProvider>
+    <IonApp>
+      <IonRouterOutlet />
+    </IonApp>
+  </KaspaProvider>
 </template>

@@ -100,6 +100,7 @@ async function storePhraseAndRedirect() {
       <div class="ion-padding action-wrapper">
         <IonButton
           v-if="!isStoringPhrase"
+          color="dark"
           expand="block"
           @click="storePhraseAndRedirect"
         >
