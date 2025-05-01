@@ -12,6 +12,7 @@ import {
 } from '@/composables/useSecureStorage'
 import {
   blockTimeToDate,
+  formatBlockDaaScore,
   shortenHash,
   toHumanReadableDate,
 } from '@/utils/helpers'
@@ -31,16 +32,11 @@ import {
   IonSegmentButton,
   IonSegmentContent,
   IonSegmentView,
+  IonSkeletonText,
   IonToolbar,
+  isPlatform,
 } from '@ionic/vue'
-import {
-  arrowDown,
-  arrowDownCircleOutline,
-  arrowUp,
-  arrowUpCircleOutline,
-  caretUp,
-  globeOutline,
-} from 'ionicons/icons'
+import { arrowDown, arrowUp, caretUp, globeOutline } from 'ionicons/icons'
 import { computed, onMounted, ref } from 'vue'
 
 const storage = useSecureStorage()
@@ -99,23 +95,29 @@ async function fetchTransactions(address: string) {
   }
 }
 
+const isFetching = ref(true)
+
 async function fetchAll() {
-  await fetchBalance(address.value)
-  await fetchUtxos(address.value)
-  await fetchTransactions(address.value)
+  isFetching.value = true
+
+  await Promise.all([
+    fetchBalance(address.value),
+    fetchUtxos(address.value),
+    fetchTransactions(address.value),
+  ])
+
+  isFetching.value = false
 }
 
 onMounted(() => {
   storage.getItem(K_ACCOUNT_PRIMARY).then((account) => {
     address.value = (JSON.parse(account!) as WalletAccount).address
-    fetchAll()
-
     kaspa.trackAddresses({
       addresses: [address.value!],
-      onChangeBalance() {
-        fetchAll()
-      },
+      onChangeBalance: () => fetchAll(),
     })
+
+    fetchAll()
   })
 })
 
@@ -127,6 +129,8 @@ async function handleRefresh(event: any) {
   await fetchAll()
   event.target.complete()
 }
+
+const isAndroid = computed(() => isPlatform('android'))
 </script>
 
 <template>
@@ -141,7 +145,7 @@ async function handleRefresh(event: any) {
       </IonRefresher>
 
       <div class="scroll-container">
-        <div class="mt-4">
+        <div :class="[isAndroid ? '' : 'mt-4']">
           <div class="header">Wallets</div>
           <div class="address">
             <KaspaAddress :address="address" :shorten="6" />
@@ -204,19 +208,20 @@ async function handleRefresh(event: any) {
                 <template
                   #default="{ item }: { item: GetFullTransactionResponse }"
                 >
-                  <IonItem button>
+                  <IonItem v-if="!isFetching" button>
                     <IonIcon
                       v-if="
                         item.outputs[0].script_public_key_address === address
                       "
                       aria-hidden="true"
-                      :icon="arrowDownCircleOutline"
+                      :icon="arrowDown"
                       slot="start"
+                      color="success"
                     />
                     <IonIcon
                       v-else
                       aria-hidden="true"
-                      :icon="arrowUpCircleOutline"
+                      :icon="arrowUp"
                       slot="start"
                       color="danger"
                     />
@@ -234,7 +239,34 @@ async function handleRefresh(event: any) {
                         </div>
                       </div>
                       <div class="font-mono history-signature">
-                        {{ shortenHash(item.transaction_id, 15) }}
+                        {{
+                          shortenHash(item.transaction_id, isAndroid ? 13 : 15)
+                        }}
+                      </div>
+                    </IonLabel>
+                  </IonItem>
+                  <IonItem v-else>
+                    <IonSkeletonText
+                      animated
+                      style="border-radius: 20px; height: 16px; width: 5%"
+                      slot="start"
+                    />
+                    <IonLabel class="history">
+                      <div class="history-header">
+                        <IonSkeletonText
+                          animated
+                          style="border-radius: 20px; height: 16px; width: 25%"
+                        />
+                        <IonSkeletonText
+                          animated
+                          style="border-radius: 20px; height: 16px; width: 25%"
+                        />
+                      </div>
+                      <div class="font-mono history-signature">
+                        <IonSkeletonText
+                          animated
+                          style="border-radius: 20px; height: 16px; width: 100%"
+                        />
                       </div>
                     </IonLabel>
                   </IonItem>
@@ -258,12 +290,13 @@ async function handleRefresh(event: any) {
                     item: GetUtxoResponse & { id: string },
                   }"
                 >
-                  <IonItem button>
+                  <IonItem v-if="!isFetching" button>
                     <IonIcon
                       v-if="true"
                       aria-hidden="true"
-                      :icon="arrowDownCircleOutline"
+                      :icon="arrowDown"
                       slot="start"
+                      color="success"
                     />
                     <IonIcon
                       v-else
@@ -277,10 +310,45 @@ async function handleRefresh(event: any) {
                         <div>
                           {{ item.utxoEntry.amount }} {{ kaspa.ticker.value }}
                         </div>
-                        <div>{{ item.utxoEntry.blockDaaScore }}</div>
+                        <div>
+                          DAA
+                          {{
+                            formatBlockDaaScore(item.utxoEntry.blockDaaScore)
+                          }}
+                        </div>
                       </div>
                       <div class="font-mono history-signature">
-                        {{ shortenHash(item.outpoint.transactionId, 15) }}
+                        {{
+                          shortenHash(
+                            item.outpoint.transactionId,
+                            isAndroid ? 13 : 15,
+                          )
+                        }}
+                      </div>
+                    </IonLabel>
+                  </IonItem>
+                  <IonItem v-else>
+                    <IonSkeletonText
+                      animated
+                      style="border-radius: 20px; height: 16px; width: 5%"
+                      slot="start"
+                    />
+                    <IonLabel class="history">
+                      <div class="history-header">
+                        <IonSkeletonText
+                          animated
+                          style="border-radius: 20px; height: 16px; width: 25%"
+                        />
+                        <IonSkeletonText
+                          animated
+                          style="border-radius: 20px; height: 16px; width: 25%"
+                        />
+                      </div>
+                      <div class="font-mono history-signature">
+                        <IonSkeletonText
+                          animated
+                          style="border-radius: 20px; height: 16px; width: 100%"
+                        />
                       </div>
                     </IonLabel>
                   </IonItem>

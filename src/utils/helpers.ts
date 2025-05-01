@@ -59,7 +59,7 @@ export const formatCurrency = (
 
 export const toHumanReadableDate = (value: string | Date) => {
   return Intl.DateTimeFormat('en-US', {
-    dateStyle: 'medium',
+    dateStyle: 'short',
     timeStyle: 'short',
   }).format(new Date(value))
 }
@@ -73,4 +73,9 @@ export function blockTimeToDate(blockTime: number) {
   // Create a new Date object using the blockTime (now in milliseconds)
   const date = new Date(blockTime)
   return date
+}
+
+export function formatBlockDaaScore(daaScore: string) {
+  // Format the score with commas for thousands
+  return daaScore.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
