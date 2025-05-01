@@ -118,7 +118,9 @@ onBeforeMount(() => {
     address.value = (JSON.parse(account!) as WalletAccount).address
     kaspa.trackAddresses({
       addresses: [address.value!],
-      onChangeBalance: fetchAll,
+      onChangeBalance: () => {
+        fetchUtxos(address.value)
+      },
     })
 
     fetchAll()
@@ -221,10 +223,37 @@ function openTxInBrowser(txId: string) {
             id="history"
             class="expand-scroll ion-content-scroll-host mt-4"
           >
-            <div v-if="transactions.length === 0" class="empty">
+            <IonList v-if="isFetching">
+              <IonItem v-for="i in 5" :key="i">
+                <IonSkeletonText
+                  animated
+                  style="border-radius: 20px; height: 16px; width: 5%"
+                  slot="start"
+                />
+                <IonLabel class="history">
+                  <div class="history-header">
+                    <IonSkeletonText
+                      animated
+                      style="border-radius: 20px; height: 16px; width: 25%"
+                    />
+                    <IonSkeletonText
+                      animated
+                      style="border-radius: 20px; height: 16px; width: 25%"
+                    />
+                  </div>
+                  <div class="font-mono history-signature">
+                    <IonSkeletonText
+                      animated
+                      style="border-radius: 20px; height: 16px; width: 100%"
+                    />
+                  </div>
+                </IonLabel>
+              </IonItem>
+            </IonList>
+            <div v-else-if="transactions.length === 0" class="empty">
               <div class="empty-text">No Records</div>
             </div>
-            <IonList v-else-if="!isFetching">
+            <IonList v-else>
               <DynamicScroller
                 key-field="transaction_id"
                 :min-item-size="100"
@@ -277,7 +306,12 @@ function openTxInBrowser(txId: string) {
                 </template>
               </DynamicScroller>
             </IonList>
-            <IonList v-else>
+          </IonSegmentContent>
+          <IonSegmentContent
+            id="utxo"
+            class="expand-scroll ion-content-scroll-host mt-4"
+          >
+            <IonList v-if="isFetching">
               <IonItem v-for="i in 5" :key="i">
                 <IonSkeletonText
                   animated
@@ -304,15 +338,10 @@ function openTxInBrowser(txId: string) {
                 </IonLabel>
               </IonItem>
             </IonList>
-          </IonSegmentContent>
-          <IonSegmentContent
-            id="utxo"
-            class="expand-scroll ion-content-scroll-host mt-4"
-          >
-            <div v-if="utxos.length === 0" class="empty">
+            <div v-else-if="utxos.length === 0" class="empty">
               <div class="empty-text">No Records</div>
             </div>
-            <IonList v-else-if="!isFetching">
+            <IonList v-else>
               <DynamicScroller
                 key-field="id"
                 :min-item-size="100"
@@ -364,33 +393,6 @@ function openTxInBrowser(txId: string) {
                   </IonItem>
                 </template>
               </DynamicScroller>
-            </IonList>
-            <IonList v-else>
-              <IonItem v-for="i in 5" :key="i">
-                <IonSkeletonText
-                  animated
-                  style="border-radius: 20px; height: 16px; width: 5%"
-                  slot="start"
-                />
-                <IonLabel class="history">
-                  <div class="history-header">
-                    <IonSkeletonText
-                      animated
-                      style="border-radius: 20px; height: 16px; width: 25%"
-                    />
-                    <IonSkeletonText
-                      animated
-                      style="border-radius: 20px; height: 16px; width: 25%"
-                    />
-                  </div>
-                  <div class="font-mono history-signature">
-                    <IonSkeletonText
-                      animated
-                      style="border-radius: 20px; height: 16px; width: 100%"
-                    />
-                  </div>
-                </IonLabel>
-              </IonItem>
             </IonList>
           </IonSegmentContent>
         </IonSegmentView>
