@@ -15,6 +15,7 @@ import {
   IonTitle,
   IonToolbar,
   toastController,
+  useIonRouter,
 } from '@ionic/vue'
 
 import { useBiometric } from '@/composables/useBiometric'
@@ -46,6 +47,7 @@ const kaspa = inject(injKaspa) as Kaspa
 const balanceStore = useBalanceStore()
 const storage = useSecureStorage()
 const biometric = useBiometric()
+const router = useIonRouter()
 const feeEstimateRaw = reactive({ low: 1, normal: 1, high: 1 })
 const account = shallowRef<WalletAccount>()
 const utxoEntries = shallowRef<UtxoEntry[]>([])
@@ -200,7 +202,8 @@ async function executeTransfer() {
     priorityFee: 0n,
   }
 
-  await kaspa.transferKas(payload, account.value!.privkey)
+  const res = await kaspa.transferKas(payload, account.value!.privkey)
+  await router.replace(`/home/sent/${res}`)
 }
 
 const isSubmitting = ref(false)

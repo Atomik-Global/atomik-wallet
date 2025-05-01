@@ -54,6 +54,14 @@ const routes: Array<RouteRecordRaw> = [
       onboardedOnly: true,
     },
   },
+  {
+    path: '/home/sent/:txId',
+    name: 'Sent',
+    component: () => import('@/views/Sent.vue'),
+    meta: {
+      onboardedOnly: true,
+    },
+  },
 ]
 
 const router = createRouter({
