@@ -235,8 +235,8 @@ async function submit() {
   } catch (error) {
     console.error(error)
     const toast = await toastController.create({
-      header: 'Error',
-      message: (error as Error).message,
+      header: 'Aborted',
+      message: (error as Error).message || (error as string),
       duration: 1500,
     })
     await toast.present()
