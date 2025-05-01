@@ -256,6 +256,7 @@ async function submit() {
       <IonItem class="mt-4">
         <IonInput
           v-model="state.amount"
+          autofocus
           class="mt-4"
           placeholder="Amount"
           :label="kaspa.ticker.value"
@@ -321,7 +322,6 @@ async function submit() {
             v-model="state.toAddress"
             label="To Address"
             label-placement="floating"
-            autofocus
             auto-grow
             required
             inputmode="text"
