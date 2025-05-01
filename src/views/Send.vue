@@ -192,18 +192,28 @@ async function executeTransfer() {
   }
 
   const prioFee = feeEstimate.value[state.priority]
-  const finalAmount = state.amount! - prioFee
+
+  let priorityFee = kaspa.toSompi(prioFee.toString())
+  let finalAmount = state.amount!
+
+  // if max amount needs to be transferred, reserve some for network fee.
+  // required to prevent "Insufficient fund" error.
+  if (state.amount === balanceStore.balance) {
+    priorityFee = 0n
+    finalAmount -= prioFee
+  }
+
   const finalAmountSompi = kaspa.toSompi(finalAmount.toString())
 
   const payload = {
     changeAddress: account.value!.address,
     entries: utxoEntries.value,
     outputs: [{ address: state.toAddress!, amount: finalAmountSompi }],
-    priorityFee: 0n,
+    priorityFee,
   }
 
   const res = await kaspa.transferKas(payload, account.value!.privkey)
-  await router.replace(`/home/sent/${res}`)
+  router.replace(`/home/sent/${res}`)
 }
 
 const isSubmitting = ref(false)
