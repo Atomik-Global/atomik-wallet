@@ -38,6 +38,14 @@ const routes: Array<RouteRecordRaw> = [
       onboardedOnly: true,
     },
   },
+  {
+    path: '/home/receive',
+    name: 'Receive',
+    component: () => import('@/views/Receive.vue'),
+    meta: {
+      onboardedOnly: true,
+    },
+  },
 ]
 
 const router = createRouter({

@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import ClipboardCopy from '@/components/ClipboardCopy.vue'
 import { useKaspa } from '@/composables/useKaspa'
 import {
   K_ACCOUNT_PRIMARY,
   useSecureStorage,
 } from '@/composables/useSecureStorage'
-import { Clipboard } from '@capacitor/clipboard'
 import {
   IonBackButton,
   IonButton,
@@ -13,18 +13,15 @@ import {
   IonContent,
   IonGrid,
   IonHeader,
-  IonIcon,
   IonPage,
   IonRow,
   IonSpinner,
   IonText,
   IonTitle,
-  IonToast,
   IonToolbar,
   toastController,
   useIonRouter,
 } from '@ionic/vue'
-import { copyOutline } from 'ionicons/icons'
 import { computed, onBeforeMount, ref } from 'vue'
 
 const kaspa = useKaspa()
@@ -39,12 +36,6 @@ onBeforeMount(() => {
     seed.value = mnemonic.toSeed()
   })
 })
-
-async function copyToClipboard() {
-  await Clipboard.write({
-    string: phrase.value,
-  })
-}
 
 const isStoringPhrase = ref(false)
 const router = useIonRouter()
@@ -102,21 +93,7 @@ async function storePhraseAndRedirect() {
           </IonRow>
         </IonGrid>
         <div style="margin-top: 0.5rem">
-          <IonButton
-            id="copy-toast-trigger"
-            expand="block"
-            fill="clear"
-            @click="copyToClipboard"
-          >
-            <IonIcon :icon="copyOutline" />
-            Copy to Clipboard
-          </IonButton>
-          <IonToast
-            color="dark"
-            trigger="copy-toast-trigger"
-            message="Items copied to clipboard"
-            :duration="500"
-          />
+          <ClipboardCopy :item="phrase" />
         </div>
       </div>
 

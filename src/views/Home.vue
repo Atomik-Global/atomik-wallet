@@ -176,7 +176,13 @@ const isAndroid = computed(() => isPlatform('android'))
             </div>
           </div>
           <div class="account-card-actions">
-            <IonButton size="large" color="light" shape="round" fill="outline">
+            <IonButton
+              router-link="/home/receive"
+              size="large"
+              color="light"
+              shape="round"
+              fill="outline"
+            >
               <IonIcon slot="icon-only" :icon="arrowDown" />
             </IonButton>
             <IonButton color="light" shape="round" fill="solid">
