@@ -19,10 +19,11 @@ import {
   IonText,
   IonTitle,
   IonToolbar,
+  onIonViewWillEnter,
   toastController,
   useIonRouter,
 } from '@ionic/vue'
-import { computed, inject, onBeforeMount, ref } from 'vue'
+import { computed, inject, ref } from 'vue'
 
 const kaspa = inject(injKaspa) as Kaspa
 const storage = useSecureStorage()
@@ -30,7 +31,7 @@ const phrase = ref('')
 const seed = ref('')
 const splitPhrase = computed(() => phrase.value.split(' '))
 
-onBeforeMount(() => {
+onIonViewWillEnter(() => {
   kaspa.generateMnemonic().then((mnemonic) => {
     phrase.value = mnemonic.phrase
     seed.value = mnemonic.toSeed()

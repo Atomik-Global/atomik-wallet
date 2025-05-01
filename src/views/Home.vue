@@ -39,12 +39,13 @@ import {
   IonSkeletonText,
   IonToolbar,
   isPlatform,
+  onIonViewWillEnter,
   toastController,
   useBackButton,
   useIonRouter,
 } from '@ionic/vue'
 import { arrowDown, arrowUp, caretUp, globeOutline } from 'ionicons/icons'
-import { computed, inject, onBeforeMount, ref } from 'vue'
+import { computed, inject, ref } from 'vue'
 
 const balanceStore = useBalanceStore()
 const storage = useSecureStorage()
@@ -142,7 +143,7 @@ async function fetchAll() {
   isFetching.value = false
 }
 
-onBeforeMount(() => {
+onIonViewWillEnter(() => {
   storage.getItem(K_ACCOUNT_PRIMARY).then((account) => {
     address.value = (JSON.parse(account!) as WalletAccount).address
     kaspa.trackAddresses({

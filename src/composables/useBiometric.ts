@@ -6,8 +6,8 @@ import {
   type CheckBiometryResult,
 } from '@aparajita/capacitor-biometric-auth'
 import { PluginListenerHandle } from '@capacitor/core'
-import { toastController } from '@ionic/vue'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onIonViewWillEnter, toastController } from '@ionic/vue'
+import { onUnmounted, ref } from 'vue'
 
 export function useBiometric() {
   const isAvailable = ref(true)
@@ -47,7 +47,7 @@ export function useBiometric() {
     return BiometricAuth.authenticate()
   }
 
-  onMounted(async () => {
+  onIonViewWillEnter(async () => {
     updateBiometryInfo(await BiometricAuth.checkBiometry())
 
     try {

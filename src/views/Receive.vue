@@ -15,16 +15,17 @@ import {
   IonText,
   IonTitle,
   IonToolbar,
+  onIonViewWillEnter,
 } from '@ionic/vue'
 import { useQRCode } from '@vueuse/integrations/useQRCode.mjs'
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 
 const storage = useSecureStorage()
 const address = ref('')
 const qrcode = useQRCode(address)
 const canShare = ref(true)
 
-onMounted(() => {
+onIonViewWillEnter(() => {
   storage.getItem(K_ACCOUNT_PRIMARY).then((data) => {
     address.value = JSON.parse(data ?? '{}').address
   })

@@ -14,6 +14,7 @@ import {
   IonTextarea,
   IonTitle,
   IonToolbar,
+  onIonViewWillEnter,
   toastController,
   useIonRouter,
 } from '@ionic/vue'
@@ -29,15 +30,7 @@ import { injKaspa, Kaspa } from '@/injectives'
 import type { UtxoEntry } from '@/kaspa/kaspa'
 import { useBalanceStore } from '@/stores/balance'
 import { Clipboard } from '@capacitor/clipboard'
-import {
-  computed,
-  inject,
-  onMounted,
-  reactive,
-  ref,
-  shallowRef,
-  watch,
-} from 'vue'
+import { computed, inject, reactive, ref, shallowRef, watch } from 'vue'
 
 type PriorityFee = 'low' | 'normal' | 'high'
 
@@ -52,7 +45,7 @@ const feeEstimateRaw = reactive({ low: 1, normal: 1, high: 1 })
 const account = shallowRef<WalletAccount>()
 const utxoEntries = shallowRef<UtxoEntry[]>([])
 
-onMounted(async () => {
+onIonViewWillEnter(async () => {
   const acc = await storage.getItem(K_ACCOUNT_PRIMARY)
   account.value = JSON.parse(acc!) as WalletAccount
 

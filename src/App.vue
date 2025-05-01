@@ -9,9 +9,9 @@ useBiometric()
 </script>
 
 <template>
-  <KaspaProvider>
-    <IonApp>
+  <IonApp>
+    <KaspaProvider>
       <IonRouterOutlet />
-    </IonApp>
-  </KaspaProvider>
+    </KaspaProvider>
+  </IonApp>
 </template>
