@@ -119,6 +119,7 @@ onBeforeMount(() => {
     kaspa.trackAddresses({
       addresses: [address.value!],
       onChangeBalance: () => {
+        fetchBalance(address.value)
         fetchUtxos(address.value)
       },
     })
@@ -177,12 +178,12 @@ function openTxInBrowser(txId: string) {
           </div>
           <div class="account-card-footer">
             <div>
-              <div class="balance-fiat">USD $10,000</div>
+              <div class="balance-fiat">-</div>
               <div class="price-change">
                 <span>24hr Change</span>
                 <span>
-                  <IonIcon :icon="caretUp" />
-                  <span>1.5%</span>
+                  <!-- <IonIcon :icon="caretUp" /> -->
+                  <span>-</span>
                 </span>
               </div>
             </div>
