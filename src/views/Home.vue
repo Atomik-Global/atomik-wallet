@@ -37,7 +37,7 @@ import {
   isPlatform,
 } from '@ionic/vue'
 import { arrowDown, arrowUp, caretUp, globeOutline } from 'ionicons/icons'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeMount, ref } from 'vue'
 
 const storage = useSecureStorage()
 const address = ref('')
@@ -109,12 +109,12 @@ async function fetchAll() {
   isFetching.value = false
 }
 
-onMounted(() => {
+onBeforeMount(() => {
   storage.getItem(K_ACCOUNT_PRIMARY).then((account) => {
     address.value = (JSON.parse(account!) as WalletAccount).address
     kaspa.trackAddresses({
       addresses: [address.value!],
-      onChangeBalance: () => fetchAll(),
+      onChangeBalance: fetchAll,
     })
 
     fetchAll()
@@ -146,7 +146,7 @@ const isAndroid = computed(() => isPlatform('android'))
 
       <div class="scroll-container">
         <div :class="[isAndroid ? '' : 'mt-4']">
-          <div class="header">Wallets</div>
+          <div class="header">Wallet</div>
           <div class="address">
             <KaspaAddress :address="address" :shorten="6" />
           </div>
@@ -199,6 +199,7 @@ const isAndroid = computed(() => isPlatform('android'))
           <IonSegmentContent id="history" class="expand-scroll mt-4">
             <IonList>
               <DynamicScroller
+                :key="isFetching"
                 class="scroller"
                 page-mode
                 key-field="transaction_id"
@@ -277,6 +278,7 @@ const isAndroid = computed(() => isPlatform('android'))
           <IonSegmentContent id="utxo" class="expand-scroll mt-4">
             <IonList>
               <DynamicScroller
+                :key="isFetching"
                 class="scroller"
                 page-mode
                 key-field="id"
@@ -492,7 +494,7 @@ const isAndroid = computed(() => isPlatform('android'))
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding-bottom: var(--ion-safe-area-bottom, 0);
+  /* padding-bottom: var(--ion-safe-area-bottom, 0); */
 }
 
 .expand-scroll {
