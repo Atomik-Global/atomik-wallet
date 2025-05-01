@@ -1,8 +1,8 @@
-import { computed } from 'vue'
-import { useKaspa } from './useKaspa'
+import { injKaspa, Kaspa } from '@/injectives'
+import { computed, inject } from 'vue'
 
 export function useKaspaRest() {
-  const kaspa = useKaspa()
+  const kaspa = inject(injKaspa) as Kaspa
 
   const apiUrl = computed(() => {
     return kaspa.isMainnet.value

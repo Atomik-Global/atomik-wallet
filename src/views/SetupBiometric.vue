@@ -121,4 +121,9 @@ async function no() {
   left: 0;
   right: 0;
 }
+
+.action-wrapper > :not(:last-child) {
+  margin-block-start: 0.75rem;
+  margin-block-end: 0.75rem;
+}
 </style>

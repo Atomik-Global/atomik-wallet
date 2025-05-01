@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import ClipboardCopy from '@/components/ClipboardCopy.vue'
-import { useKaspa } from '@/composables/useKaspa'
 import {
   K_ACCOUNT_PRIMARY,
   useSecureStorage,
 } from '@/composables/useSecureStorage'
+import { injKaspa, Kaspa } from '@/injectives'
 import {
   IonBackButton,
   IonButton,
@@ -22,9 +22,9 @@ import {
   toastController,
   useIonRouter,
 } from '@ionic/vue'
-import { computed, onBeforeMount, ref } from 'vue'
+import { computed, inject, onBeforeMount, ref } from 'vue'
 
-const kaspa = useKaspa()
+const kaspa = inject(injKaspa) as Kaspa
 const storage = useSecureStorage()
 const phrase = ref('')
 const seed = ref('')

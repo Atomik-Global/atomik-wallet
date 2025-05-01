@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { useKaspa } from '@/composables/useKaspa'
+import { injKaspa, Kaspa } from '@/injectives'
 import { shortenKaspaAddress } from '@/utils/helpers'
 import { Clipboard } from '@capacitor/clipboard'
 import { IonIcon, toastController } from '@ionic/vue'
 import { copyOutline } from 'ionicons/icons'
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 
 const props = defineProps<{
   address: string
@@ -12,7 +12,7 @@ const props = defineProps<{
   shorten?: number
 }>()
 
-const kaspa = useKaspa()
+const kaspa = inject(injKaspa) as Kaspa
 const href = computed(() => {
   return `${kaspa.explorerUrl.value}/addresses/${props.address}`
 })
