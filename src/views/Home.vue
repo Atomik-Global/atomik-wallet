@@ -196,12 +196,12 @@ const isAndroid = computed(() => isPlatform('android'))
           </IonSegment>
         </div>
         <IonSegmentView class="mt-4">
-          <IonSegmentContent id="history" class="expand-scroll mt-4">
+          <IonSegmentContent
+            id="history"
+            class="expand-scroll ion-content-scroll-host mt-4"
+          >
             <IonList>
               <DynamicScroller
-                :key="isFetching"
-                class="scroller"
-                page-mode
                 key-field="transaction_id"
                 :min-item-size="100"
                 :items="mappedTransactions"
@@ -275,12 +275,12 @@ const isAndroid = computed(() => isPlatform('android'))
               </DynamicScroller>
             </IonList>
           </IonSegmentContent>
-          <IonSegmentContent id="utxo" class="expand-scroll mt-4">
+          <IonSegmentContent
+            id="utxo"
+            class="expand-scroll ion-content-scroll-host mt-4"
+          >
             <IonList>
               <DynamicScroller
-                :key="isFetching"
-                class="scroller"
-                page-mode
                 key-field="id"
                 :min-item-size="100"
                 :items="mappedUtxos"
@@ -500,5 +500,23 @@ const isAndroid = computed(() => isPlatform('android'))
 .expand-scroll {
   flex-grow: 1;
   overflow-y: auto;
+}
+
+.ion-content-scroll-host::before,
+.ion-content-scroll-host::after {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  content: '';
+}
+
+.ion-content-scroll-host::before {
+  bottom: -1px;
+}
+
+.ion-content-scroll-host::after {
+  top: -1px;
 }
 </style>
