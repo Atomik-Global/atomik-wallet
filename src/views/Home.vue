@@ -34,12 +34,21 @@ useConfirmBackToQuit()
 
 const kaspa = inject(injKaspa) as Kaspa
 const accountStore = useAccountStore()
-const loading = ref(true)
-const backgroundLoading = ref(false)
+const isLoadingBalance = ref(true)
+const isLoadingTxs = ref(true)
+const isLoadingTxsInBg = ref(false)
 
 onIonViewWillEnter(async () => {
   await kaspa.init()
   await accountStore.init()
+
+  await balanceStore.fetchBalance()
+  await balanceStore.fetchUtxos()
+  isLoadingBalance.value = false
+
+  balanceStore.fetchTransactions().then(() => {
+    isLoadingTxs.value = false
+  })
 
   kaspa.trackAddresses({
     addresses: [accountStore.primary!.address],
@@ -48,20 +57,19 @@ onIonViewWillEnter(async () => {
       await balanceStore.fetchUtxos()
 
       // prevent multiple indexer fetch
-      if (backgroundLoading.value) {
+      // prevent skeleton from appearing
+      if (isLoadingTxsInBg.value) {
         return
       }
 
+      isLoadingTxsInBg.value = true
       setTimeout(() => {
-        backgroundLoading.value = true
         balanceStore.fetchTransactions().then(() => {
-          backgroundLoading.value = false
+          isLoadingTxsInBg.value = false
         })
-      }, 30000) // 30s, wait for indexer update
+      }, 5000) // 5s (sweetspot), wait for the indexer
     },
   })
-
-  await fetchAll()
 })
 
 const balanceStore = useBalanceStore()
@@ -83,7 +91,7 @@ const transactions = computed(() => {
 
 const fetchAll = async () => {
   try {
-    loading.value = true
+    isLoadingTxs.value = true
     await balanceStore.fetchBalance()
     await balanceStore.fetchUtxos()
     await balanceStore.fetchTransactions()
@@ -96,7 +104,7 @@ const fetchAll = async () => {
 
     await toast.present()
   } finally {
-    loading.value = false
+    isLoadingTxs.value = false
   }
 }
 
@@ -121,15 +129,15 @@ function openTxInBrowser(txId: string) {
         <IonRefresherContent />
       </IonRefresher>
       <div class="scroll-container">
-        <Header :loading="loading" />
-        <AccountDisplay :loading="loading" />
+        <Header :loading="isLoadingBalance" />
+        <AccountDisplay :loading="isLoadingBalance" />
         <Segment />
         <IonSegmentView class="mt-4">
           <SegmentContent
             id="history"
             key-field="transaction_id"
             :items="transactions"
-            :loading="loading"
+            :loading="isLoadingTxs"
             @click="(item) => openTxInBrowser(item.transaction_id)"
           >
             <template #content-icon="{ item }">
@@ -149,7 +157,7 @@ function openTxInBrowser(txId: string) {
             id="utxo"
             key-field="id"
             :items="utxos"
-            :loading="loading"
+            :loading="isLoadingBalance"
             @click="(item) => openTxInBrowser(item.outpoint.transactionId)"
           >
             <template #content-icon>
