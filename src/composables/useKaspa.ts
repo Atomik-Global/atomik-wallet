@@ -153,13 +153,6 @@ export const useKaspa = () => {
     return rpc.value!.getUtxosByAddresses(addresses)
   }
 
-  function estimateTransaction(settings: Kaspa.IGeneratorSettingsObject) {
-    return kaspa.value!.estimateTransactions({
-      ...settings,
-      networkId: networkId.value,
-    })
-  }
-
   function createTransactions(settings: Kaspa.IGeneratorSettingsObject) {
     return kaspa.value!.createTransactions({
       ...settings,
@@ -167,35 +160,11 @@ export const useKaspa = () => {
     })
   }
 
-  function createTransaction(data: {
-    entries: Kaspa.IUtxoEntry[]
-    outputs: Kaspa.IPaymentOutput[]
-    priorityFee: bigint
-    payload?: Kaspa.HexString | Uint8Array
-    sigOpCount?: number
-  }) {
-    return kaspa.value!.createTransaction(
-      data.entries,
-      data.outputs,
-      data.priorityFee,
-      data.payload,
-      data.sigOpCount,
-    )
-  }
-
   function generateTransaction(data: Kaspa.IGeneratorSettingsObject) {
     return new kaspa.value!.Generator({
       ...data,
       networkId: networkId.value,
     })
-  }
-
-  function calculateTransactionFee(tx: Kaspa.Transaction) {
-    return kaspa.value!.calculateTransactionFee(networkId.value, tx)
-  }
-
-  function calculateTransactionMass(tx: Kaspa.ITransaction) {
-    return kaspa.value!.calculateTransactionMass(networkId.value, tx)
   }
 
   async function getFeeEstimate() {
@@ -258,12 +227,8 @@ export const useKaspa = () => {
     sompiPerKas,
     getFeeEstimate,
     getUtxoEntries,
-    createTransaction,
     transferKas,
-    calculateTransactionMass,
-    estimateTransaction,
     createTransactions,
-    calculateTransactionFee,
     getBalanceByAddress,
     generateTransaction,
   }
