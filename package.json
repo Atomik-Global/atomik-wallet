@@ -14,6 +14,7 @@
   "dependencies": {
     "@aparajita/capacitor-biometric-auth": "^9.0.0",
     "@aparajita/capacitor-secure-storage": "^6.0.1",
+    "@capacitor-mlkit/barcode-scanning": "^7.2.1",
     "@capacitor/android": "7.2.0",
     "@capacitor/app": "7.0.1",
     "@capacitor/browser": "^7.0.1",
@@ -31,6 +32,7 @@
     "@maskito/vue": "^3.7.2",
     "@vueuse/core": "^13.1.0",
     "@vueuse/integrations": "^13.1.0",
+    "barcode-detector": "^3.0.2",
     "ionicons": "^7.0.0",
     "pinia": "^3.0.2",
     "qrcode": "^1.5.4",
