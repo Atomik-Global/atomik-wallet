@@ -25,6 +25,16 @@ export const formatCurrency = (
   }).format(parseFloat(value.toString()))
 }
 
+export const formatCurrencyAgnostic = (
+  value: string | number,
+  locale = 'en-US',
+) => {
+  return new Intl.NumberFormat(locale, {
+    style: 'decimal',
+    maximumFractionDigits: 0,
+  }).format(parseFloat(value.toString()))
+}
+
 export const toHumanReadableDate = (value: string | Date) => {
   return Intl.DateTimeFormat('en-US', {
     dateStyle: 'short',

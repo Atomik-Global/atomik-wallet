@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { injKaspa, Kaspa } from '@/injectives'
 import { useBalanceStore } from '@/stores/balance'
+import { formatCurrencyAgnostic } from '@/utils/helpers'
 import {
   IonButton,
   IonChip,
@@ -32,7 +33,7 @@ const router = useIonRouter()
       </IonChip>
     </div>
     <div v-if="!loading" class="balance">
-      <IonText>{{ balanceStore.balance }}</IonText>
+      <IonText>{{ formatCurrencyAgnostic(balanceStore.balance) }}</IonText>
       <IonText class="balance-unit">{{ kaspa.ticker.value }}</IonText>
     </div>
     <IonSkeletonText v-else animated class="skeleton-balance" />
