@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { injKaspa, Kaspa } from '@/injectives'
 import { shortenKaspaAddress } from '@/utils/helpers'
+import { Browser } from '@capacitor/browser'
 import { Clipboard } from '@capacitor/clipboard'
 import { IonIcon, toastController } from '@ionic/vue'
 import { copyOutline } from 'ionicons/icons'
-import { computed, inject } from 'vue'
+import { inject } from 'vue'
 
 const props = defineProps<{
   address: string
@@ -13,12 +14,11 @@ const props = defineProps<{
 }>()
 
 const kaspa = inject(injKaspa) as Kaspa
-const href = computed(() => {
-  return `${kaspa.explorerUrl.value}/addresses/${props.address}`
-})
 
-async function handleCopy() {
-  if (!props.copiable) return
+const handleCopy = async () => {
+  if (!props.copiable) {
+    return
+  }
 
   await Clipboard.write({
     string: props.address,
@@ -32,13 +32,19 @@ async function handleCopy() {
 
   await toast.present()
 }
+
+const viewOnChain = () => {
+  Browser.open({
+    url: `${kaspa.explorerUrl.value}/addresses/${props.address}`,
+  })
+}
 </script>
 
 <template>
   <div class="wrapper">
-    <a :href="href" target="_blank" class="address">{{
-      shorten ? shortenKaspaAddress(address, shorten) : address
-    }}</a>
+    <div class="address" @click.native="viewOnChain">
+      {{ shorten ? shortenKaspaAddress(address, shorten) : address }}
+    </div>
     <IonIcon v-if="copiable" :icon="copyOutline" @click="handleCopy" />
   </div>
 </template>
