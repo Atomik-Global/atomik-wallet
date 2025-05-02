@@ -52,10 +52,11 @@ onIonViewWillEnter(async () => {
         return
       }
 
-      setTimeout(async () => {
+      setTimeout(() => {
         backgroundLoading.value = true
-        await balanceStore.fetchTransactions()
-        backgroundLoading.value = false
+        balanceStore.fetchTransactions().then(() => {
+          backgroundLoading.value = false
+        })
       }, 30000) // 30s, wait for indexer update
     },
   })
