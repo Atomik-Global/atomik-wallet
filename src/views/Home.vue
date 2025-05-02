@@ -42,7 +42,11 @@ onIonViewWillEnter(async () => {
 
   kaspa.trackAddresses({
     addresses: [accountStore.primary!.address],
-    onChangeBalance: () => fetchAll(),
+    onChangeBalance: () => {
+      balanceStore.fetchBalance()
+      balanceStore.fetchUtxos()
+      balanceStore.fetchTransactions()
+    },
   })
 
   await fetchAll()
