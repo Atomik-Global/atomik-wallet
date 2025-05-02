@@ -1,31 +1,32 @@
-import { injKaspa, Kaspa } from '@/injectives'
-import { computed, inject } from 'vue'
+import { K_NETWORK, useSecureStorage } from './useSecureStorage'
 
 export function useKaspaRest() {
-  const kaspa = inject(injKaspa) as Kaspa
+  const storage = useSecureStorage()
 
-  const apiUrl = computed(() => {
-    return kaspa.isMainnet.value
+  const getApi = async () => {
+    const network = await storage.getItem(K_NETWORK)
+    return network === 'mainnet'
       ? 'https://api.kaspa.org'
       : 'https://api-tn10.kaspa.org'
-  })
+  }
 
   async function getBalance(address: string): Promise<GetBalanceResponse> {
-    const response = await fetch(`${apiUrl.value}/addresses/${address}/balance`)
+    const api = await getApi()
+    const response = await fetch(`${api}/addresses/${address}/balance`)
     return await response.json()
   }
 
   async function getUtxos(address: string): Promise<GetUtxoResponse[]> {
-    const response = await fetch(`${apiUrl.value}/addresses/${address}/utxos`)
+    const api = await getApi()
+    const response = await fetch(`${api}/addresses/${address}/utxos`)
     return await response.json()
   }
 
   async function getFullTransactionsPage(
     address: string,
   ): Promise<GetFullTransactionResponse[]> {
-    const url = new URL(
-      `${apiUrl.value}/addresses/${address}/full-transactions-page`,
-    )
+    const api = await getApi()
+    const url = new URL(`${api}/addresses/${address}/full-transactions-page`)
 
     url.searchParams.append('limit', '50')
     url.searchParams.append('before', '0')

@@ -33,6 +33,7 @@ import '@ionic/vue/css/palettes/dark.system.css'
 
 /* Theme variables */
 import './theme/variables.css'
+import './theme/globals.css'
 
 /* 3rd party dependencies */
 import { createPinia } from 'pinia'

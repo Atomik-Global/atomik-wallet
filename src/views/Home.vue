@@ -1,96 +1,47 @@
 <script setup lang="ts">
+import SegmentContent from '@/components/Home/SegmentContent.vue'
 import KaspaAddress from '@/components/KaspaAddress.vue'
-import { WalletAccount } from '@/composables/useKaspa'
-import {
-  GetFullTransactionResponse,
-  GetUtxoResponse,
-  useKaspaRest,
-} from '@/composables/useKaspaRest'
-import {
-  K_ACCOUNT_PRIMARY,
-  useSecureStorage,
-} from '@/composables/useSecureStorage'
+import { useConfirmBackToQuit } from '@/composables/useConfirmBackToQuit'
 import { injKaspa, Kaspa } from '@/injectives'
+import { useAccountStore } from '@/stores/account'
 import { useBalanceStore } from '@/stores/balance'
-import {
-  blockTimeToDate,
-  formatBlockDaaScore,
-  shortenHash,
-  toHumanReadableDate,
-} from '@/utils/helpers'
-import { App } from '@capacitor/app'
 import { Browser } from '@capacitor/browser'
 import {
   IonButton,
   IonChip,
   IonContent,
+  IonFooter,
   IonHeader,
   IonIcon,
-  IonItem,
   IonLabel,
-  IonList,
   IonPage,
   IonRefresher,
   IonRefresherContent,
   IonSegment,
   IonSegmentButton,
-  IonSegmentContent,
   IonSegmentView,
-  IonSkeletonText,
   IonToolbar,
   isPlatform,
   onIonViewWillEnter,
   toastController,
-  useBackButton,
   useIonRouter,
 } from '@ionic/vue'
-import { arrowDown, arrowUp, caretUp, globeOutline } from 'ionicons/icons'
+import { arrowDown, arrowUp, globeOutline, scanOutline } from 'ionicons/icons'
 import { computed, inject, ref } from 'vue'
 
-const balanceStore = useBalanceStore()
-const storage = useSecureStorage()
-const address = ref('')
+useConfirmBackToQuit()
+
 const kaspa = inject(injKaspa) as Kaspa
-const kaspaRest = useKaspaRest()
-const utxos = ref<GetUtxoResponse[]>([])
-const transactions = ref<GetFullTransactionResponse[]>([])
+
+const balanceStore = useBalanceStore()
+const accountStore = useAccountStore()
+const address = computed(() => accountStore.primary?.address ?? '')
+
 const router = useIonRouter()
+const loading = ref(true)
 
-const backCrement = ref(0)
-useBackButton(-1, async () => {
-  if (!router.canGoBack()) {
-    if (backCrement.value > 0) {
-      await App.exitApp()
-      return
-    }
-
-    const toast = await toastController.create({
-      message: 'Go back one more time to exit the app',
-      duration: 1500,
-      color: 'light',
-    })
-
-    await toast.present()
-    backCrement.value += 1
-
-    // reset if idle by 0.8s
-    await new Promise((resolve) => setTimeout(resolve, 800))
-    backCrement.value = 0
-  }
-})
-
-const mappedTransactions = computed(() => {
-  return transactions.value.map((e) => ({
-    ...e,
-    outputs: e.outputs.map((o) => ({
-      ...o,
-      amount: kaspa.toKas(o.amount),
-    })),
-  }))
-})
-
-const mappedUtxos = computed(() => {
-  return utxos.value
+const utxos = computed(() => {
+  return balanceStore.utxos
     .map((e) => ({
       id: e.outpoint.index,
       ...e,
@@ -102,65 +53,36 @@ const mappedUtxos = computed(() => {
     .sort((a, b) => a.id - b.id)
 })
 
-async function fetchBalance(address: string) {
-  try {
-    const data = await kaspaRest.getBalance(address)
-    balanceStore.setBalance(kaspa.toKasRaw(data.balance))
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-async function fetchUtxos(address: string) {
-  try {
-    const data = await kaspaRest.getUtxos(address)
-    utxos.value = data
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-async function fetchTransactions(address: string) {
-  try {
-    const data = await kaspaRest.getFullTransactionsPage(address)
-    transactions.value = data
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-const isFetching = ref(true)
-
-async function fetchAll() {
-  isFetching.value = true
-
-  await Promise.all([
-    fetchBalance(address.value),
-    fetchUtxos(address.value),
-    fetchTransactions(address.value),
-  ])
-
-  isFetching.value = false
-}
-
-onIonViewWillEnter(() => {
-  storage.getItem(K_ACCOUNT_PRIMARY).then((account) => {
-    address.value = (JSON.parse(account!) as WalletAccount).address
-    kaspa.trackAddresses({
-      addresses: [address.value!],
-      onChangeBalance: () => {
-        fetchBalance(address.value)
-        fetchUtxos(address.value)
-      },
-    })
-
-    fetchAll()
-  })
+const transactions = computed(() => {
+  return balanceStore.transactions.map((e) => ({
+    ...e,
+    outputs: e.outputs.map((o) => ({
+      ...o,
+      amount: kaspa.toKas(o.amount),
+    })),
+  }))
 })
 
-// onUnmounted(() => {
-//   kaspa.untrackAddresses()
-// })
+const fetchAll = async () => {
+  try {
+    loading.value = true
+    await balanceStore.fetchBalance()
+    await balanceStore.fetchUtxos()
+    await balanceStore.fetchTransactions()
+  } catch (error) {
+    const toast = await toastController.create({
+      message: 'Something went wrong',
+      duration: 1500,
+      color: 'light',
+    })
+
+    await toast.present()
+  } finally {
+    loading.value = false
+  }
+}
+
+onIonViewWillEnter(() => fetchAll())
 
 async function handleRefresh(event: any) {
   await fetchAll()
@@ -250,193 +172,23 @@ function openTxInBrowser(txId: string) {
           </IonSegment>
         </div>
         <IonSegmentView class="mt-4">
-          <IonSegmentContent
-            id="history"
-            class="expand-scroll ion-content-scroll-host mt-4"
-          >
-            <IonList v-if="isFetching">
-              <IonItem v-for="i in 5" :key="i">
-                <IonSkeletonText
-                  animated
-                  style="border-radius: 20px; height: 16px; width: 5%"
-                  slot="start"
-                />
-                <IonLabel class="history">
-                  <div class="history-header">
-                    <IonSkeletonText
-                      animated
-                      style="border-radius: 20px; height: 16px; width: 25%"
-                    />
-                    <IonSkeletonText
-                      animated
-                      style="border-radius: 20px; height: 16px; width: 25%"
-                    />
-                  </div>
-                  <div class="font-mono history-signature">
-                    <IonSkeletonText
-                      animated
-                      style="border-radius: 20px; height: 16px; width: 100%"
-                    />
-                  </div>
-                </IonLabel>
-              </IonItem>
-            </IonList>
-            <div v-else-if="transactions.length === 0" class="empty">
-              <div class="empty-text">No Records</div>
-            </div>
-            <IonList v-else>
-              <DynamicScroller
-                key-field="transaction_id"
-                :min-item-size="100"
-                :items="mappedTransactions"
-              >
-                <template
-                  #default="{ item }: { item: GetFullTransactionResponse }"
-                >
-                  <IonItem
-                    v-if="!isFetching"
-                    button
-                    @click="openTxInBrowser(item.transaction_id)"
-                  >
-                    <IonIcon
-                      v-if="
-                        item.outputs[0].script_public_key_address === address
-                      "
-                      aria-hidden="true"
-                      :icon="arrowDown"
-                      slot="start"
-                      color="success"
-                    />
-                    <IonIcon
-                      v-else
-                      aria-hidden="true"
-                      :icon="arrowUp"
-                      slot="start"
-                      color="danger"
-                    />
-                    <IonLabel class="history">
-                      <div class="history-header">
-                        <div>
-                          {{ item.outputs[0].amount }} {{ kaspa.ticker.value }}
-                        </div>
-                        <div style="text-align: right">
-                          {{
-                            toHumanReadableDate(
-                              blockTimeToDate(item.accepting_block_time),
-                            )
-                          }}
-                        </div>
-                      </div>
-                      <div class="font-mono history-signature">
-                        {{
-                          shortenHash(item.transaction_id, isAndroid ? 13 : 15)
-                        }}
-                      </div>
-                    </IonLabel>
-                  </IonItem>
-                </template>
-              </DynamicScroller>
-            </IonList>
-          </IonSegmentContent>
-          <IonSegmentContent
-            id="utxo"
-            class="expand-scroll ion-content-scroll-host mt-4"
-          >
-            <IonList v-if="isFetching">
-              <IonItem v-for="i in 5" :key="i">
-                <IonSkeletonText
-                  animated
-                  style="border-radius: 20px; height: 16px; width: 5%"
-                  slot="start"
-                />
-                <IonLabel class="history">
-                  <div class="history-header">
-                    <IonSkeletonText
-                      animated
-                      style="border-radius: 20px; height: 16px; width: 25%"
-                    />
-                    <IonSkeletonText
-                      animated
-                      style="border-radius: 20px; height: 16px; width: 25%"
-                    />
-                  </div>
-                  <div class="font-mono history-signature">
-                    <IonSkeletonText
-                      animated
-                      style="border-radius: 20px; height: 16px; width: 100%"
-                    />
-                  </div>
-                </IonLabel>
-              </IonItem>
-            </IonList>
-            <div v-else-if="utxos.length === 0" class="empty">
-              <div class="empty-text">No Records</div>
-            </div>
-            <IonList v-else>
-              <DynamicScroller
-                key-field="id"
-                :min-item-size="100"
-                :items="mappedUtxos"
-              >
-                <template
-                  #default="{
-                    item,
-                  }: {
-                    item: GetUtxoResponse & { id: string },
-                  }"
-                >
-                  <IonItem button>
-                    <IonIcon
-                      v-if="true"
-                      aria-hidden="true"
-                      :icon="arrowDown"
-                      slot="start"
-                      color="success"
-                    />
-                    <IonIcon
-                      v-else
-                      aria-hidden="true"
-                      :icon="caretUp"
-                      slot="start"
-                      color="danger"
-                    />
-                    <IonLabel class="history">
-                      <div class="history-header">
-                        <div>
-                          {{ item.utxoEntry.amount }} {{ kaspa.ticker.value }}
-                        </div>
-                        <div style="text-align: right">
-                          DAA
-                          {{
-                            formatBlockDaaScore(item.utxoEntry.blockDaaScore)
-                          }}
-                        </div>
-                      </div>
-                      <div class="font-mono history-signature">
-                        {{
-                          shortenHash(
-                            item.outpoint.transactionId,
-                            isAndroid ? 13 : 15,
-                          )
-                        }}
-                      </div>
-                    </IonLabel>
-                  </IonItem>
-                </template>
-              </DynamicScroller>
-            </IonList>
-          </IonSegmentContent>
+          <SegmentContent id="history" :items="transactions" :loading />
+          <SegmentContent id="utxo" :items="utxos" :loading />
         </IonSegmentView>
       </div>
     </IonContent>
+    <IonFooter>
+      <IonToolbar class="ion-padding" style="padding-top: 0">
+        <IonButton expand="block">
+          <IonIcon slot="start" :icon="scanOutline" />
+          Pay
+        </IonButton>
+      </IonToolbar>
+    </IonFooter>
   </IonPage>
 </template>
 
 <style scoped>
-.mt-4 {
-  margin-top: 1rem;
-}
-
 .header {
   font-size: 1.75rem;
   font-weight: 500;
@@ -534,65 +286,10 @@ function openTxInBrowser(txId: string) {
   max-width: 42%;
 }
 
-.history {
-  font-size: 16px;
-}
-
-.history > :not(:first-child) {
-  margin-block-start: 0.5rem;
-  margin-block-end: 0.5rem;
-}
-
-.history-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 500;
-}
-
-.history-signature {
-  color: var(--ion-text-color-step-400);
-}
-
-.font-mono {
-  font-family: monospace;
-}
-
 .scroll-container {
   display: flex;
   flex-direction: column;
   height: 100%;
   /* padding-bottom: var(--ion-safe-area-bottom, 0); */
-}
-
-.expand-scroll {
-  flex-grow: 1;
-  overflow-y: auto;
-}
-
-.ion-content-scroll-host::before,
-.ion-content-scroll-host::after {
-  position: absolute;
-
-  width: 1px;
-  height: 1px;
-
-  content: '';
-}
-
-.ion-content-scroll-host::before {
-  bottom: -1px;
-}
-
-.ion-content-scroll-host::after {
-  top: -1px;
-}
-
-.empty {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
 }
 </style>

@@ -109,6 +109,7 @@ export const useKaspa = () => {
     processor.value!.removeEventListener('*', (event) => {
       return addressEventListener({ event })
     })
+    await processor.value!.stop()
   }
 
   function isValidAddress(address: string) {
