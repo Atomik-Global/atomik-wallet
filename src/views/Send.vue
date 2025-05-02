@@ -14,6 +14,7 @@ import {
   IonTextarea,
   IonTitle,
   IonToolbar,
+  onIonViewWillEnter,
   toastController,
   useIonRouter,
 } from '@ionic/vue'
@@ -29,6 +30,7 @@ import { useBalanceStore } from '@/stores/balance'
 import { Clipboard } from '@capacitor/clipboard'
 import { useDebounce } from '@vueuse/core'
 import { computed, inject, reactive, ref, watchEffect } from 'vue'
+import { useRoute } from 'vue-router'
 
 type PriorityFee = 'low' | 'normal' | 'high'
 
@@ -40,6 +42,7 @@ const accountStore = useAccountStore()
 const storage = useSecureStorage()
 const biometric = useBiometric()
 const router = useIonRouter()
+const route = useRoute()
 const feeEstimateRaw = reactive({ low: 1, normal: 1, high: 1 })
 const networkFee = ref(0)
 const isLoadingFee = ref(true)
@@ -47,6 +50,22 @@ const isLoadingFee = ref(true)
 const amount = ref<number>()
 const toAddress = ref<string>()
 const priority = ref<PriorityFee>('normal')
+
+onIonViewWillEnter(() => {
+  if (route.params.address) {
+    toAddress.value = route.params.address as string
+
+    if (route.query.amount) {
+      const amt = parseFloat(route.query.amount as string)
+
+      if (isNaN(amt)) {
+        return
+      }
+
+      amount.value = amt
+    }
+  }
+})
 
 const amountDebounced = useDebounce(amount, 800)
 const toAddressDebounced = useDebounce(toAddress, 800)

@@ -1,6 +1,17 @@
 <script setup lang="ts">
-import { alertController, IonButton, IonIcon, IonText } from '@ionic/vue'
+import { injKaspa, Kaspa } from '@/injectives'
+import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning'
+import {
+  alertController,
+  IonButton,
+  IonIcon,
+  IonText,
+  useIonRouter,
+} from '@ionic/vue'
 import { home, list, scanCircle } from 'ionicons/icons'
+import { inject } from 'vue'
+
+const kaspa = inject(injKaspa) as Kaspa
 
 async function onClickAsset() {
   const alert = await alertController.create({
@@ -12,6 +23,39 @@ async function onClickAsset() {
 
   await alert.present()
 }
+
+const scanSingleBarcode = async (): Promise<string> => {
+  return new Promise(async (resolve) => {
+    document.querySelector('body')?.classList.add('barcode-scanner-active')
+
+    const listener = await BarcodeScanner.addListener(
+      'barcodesScanned',
+      async (result) => {
+        const address = result.barcodes[0]
+
+        const isValidBarcode = kaspa.isValidAddress(address.rawValue)
+        if (!isValidBarcode) {
+          return
+        }
+
+        await listener.remove()
+        document
+          .querySelector('body')
+          ?.classList.remove('barcode-scanner-active')
+        await BarcodeScanner.stopScan()
+        resolve(address.rawValue)
+      },
+    )
+
+    await BarcodeScanner.startScan()
+  })
+}
+
+const router = useIonRouter()
+const scan = async () => {
+  const data = await scanSingleBarcode()
+  router.push(`/home/send/${data}`)
+}
 </script>
 
 <template>
@@ -21,7 +65,7 @@ async function onClickAsset() {
         <IonIcon :icon="home" class="footer-nav-items-icon active" />
       </div>
       <div class="footer-nav-items p-0">
-        <IonButton color="dark">
+        <IonButton color="dark" @click="scan">
           <IonIcon slot="start" :icon="scanCircle" />
           <IonText>Scan to Pay</IonText>
         </IonButton>
@@ -70,5 +114,26 @@ async function onClickAsset() {
 .footer-nav-items-icon.active {
   font-size: 1.5rem;
   opacity: 100%;
+}
+</style>
+
+<style>
+/* Hide all elements */
+body.barcode-scanner-active {
+  visibility: hidden;
+  --background: transparent;
+  --ion-background-color: transparent;
+}
+
+/* Show only the barcode scanner modal */
+.barcode-scanner-modal {
+  visibility: visible;
+}
+
+@media (prefers-color-scheme: dark) {
+  .barcode-scanner-modal {
+    --background: transparent;
+    --ion-background-color: transparent;
+  }
 }
 </style>

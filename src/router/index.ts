@@ -55,6 +55,14 @@ const routes: Array<RouteRecordRaw> = [
     },
   },
   {
+    path: '/home/send/:address',
+    name: 'SendToAddress',
+    component: () => import('@/views/Send.vue'),
+    meta: {
+      onboardedOnly: true,
+    },
+  },
+  {
     path: '/home/sent/:txId',
     name: 'Sent',
     component: () => import('@/views/Sent.vue'),
