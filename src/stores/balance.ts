@@ -28,7 +28,6 @@ export const useBalanceStore = defineStore('balance', () => {
 
   async function fetchBalance() {
     const address = accountStore.primary?.address
-    console.log({ address })
     if (!address) return
 
     const data = await kaspa.getBalanceByAddress(address)

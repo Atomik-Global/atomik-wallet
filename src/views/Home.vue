@@ -35,6 +35,7 @@ useConfirmBackToQuit()
 const kaspa = inject(injKaspa) as Kaspa
 const accountStore = useAccountStore()
 const loading = ref(true)
+const backgroundLoading = ref(false)
 
 onIonViewWillEnter(async () => {
   await kaspa.init()
@@ -42,10 +43,20 @@ onIonViewWillEnter(async () => {
 
   kaspa.trackAddresses({
     addresses: [accountStore.primary!.address],
-    onChangeBalance: () => {
-      balanceStore.fetchBalance()
-      balanceStore.fetchUtxos()
-      balanceStore.fetchTransactions()
+    onChangeBalance: async () => {
+      await balanceStore.fetchBalance()
+      await balanceStore.fetchUtxos()
+
+      // prevent multiple indexer fetch
+      if (backgroundLoading.value) {
+        return
+      }
+
+      setTimeout(async () => {
+        backgroundLoading.value = true
+        await balanceStore.fetchTransactions()
+        backgroundLoading.value = false
+      }, 30000) // 30s, wait for indexer update
     },
   })
 
