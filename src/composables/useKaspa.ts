@@ -227,6 +227,12 @@ export const useKaspa = () => {
     return summary.finalTransactionId
   }
 
+  async function getBalanceByAddress(address: string) {
+    return rpc.value!.getBalanceByAddress({
+      address,
+    })
+  }
+
   return {
     init,
     rpc,
@@ -251,6 +257,7 @@ export const useKaspa = () => {
     estimateTransaction,
     createTransactions,
     calculateTransactionFee,
+    getBalanceByAddress,
   }
 }
 

@@ -14,6 +14,7 @@ export const useAccountStore = defineStore('account', () => {
   const accounts = ref<WalletAccount[]>([])
 
   const init = async () => {
+    console.log('INIT ACCOUNT')
     await initPrimary()
     await initAccounts()
   }
@@ -48,7 +49,7 @@ export const useAccountStore = defineStore('account', () => {
     }
   }
 
-  const switchAccount = async (account: WalletAccount) => {
+  const setPrimary = async (account: WalletAccount) => {
     await storage.setItem(K_ACCOUNT_PRIMARY, JSON.stringify(account))
     primary.value = account
   }
@@ -57,6 +58,6 @@ export const useAccountStore = defineStore('account', () => {
     init,
     primary,
     accounts,
-    switchAccount,
+    setPrimary,
   }
 })

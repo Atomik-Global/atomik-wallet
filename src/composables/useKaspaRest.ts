@@ -32,6 +32,10 @@ export function useKaspaRest() {
     url.searchParams.append('before', '0')
     url.searchParams.append('after', '0')
     url.searchParams.append('resolve_previous_outpoints', 'no')
+    url.searchParams.append(
+      'fields',
+      'transaction_id,outputs,accepting_block_time',
+    )
 
     const response = await fetch(url)
     return await response.json()

@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import ClipboardCopy from '@/components/ClipboardCopy.vue'
-import {
-  K_ACCOUNT_PRIMARY,
-  useSecureStorage,
-} from '@/composables/useSecureStorage'
+import { useSecureStorage } from '@/composables/useSecureStorage'
 import { injKaspa, Kaspa } from '@/injectives'
+import { useAccountStore } from '@/stores/account'
 import {
   IonBackButton,
   IonButton,
@@ -26,6 +24,7 @@ import {
 import { computed, inject, ref } from 'vue'
 
 const kaspa = inject(injKaspa) as Kaspa
+const accountStore = useAccountStore()
 const storage = useSecureStorage()
 const phrase = ref('')
 const seed = ref('')
@@ -44,7 +43,7 @@ async function storePhraseAndRedirect() {
   try {
     isStoringPhrase.value = true
     const account = await kaspa.createWalletFromSeed(seed.value)
-    await storage.setItem(K_ACCOUNT_PRIMARY, JSON.stringify(account))
+    await accountStore.setPrimary(account)
     router.replace('/setup/pin')
   } catch (error) {
     console.error(seed.value)

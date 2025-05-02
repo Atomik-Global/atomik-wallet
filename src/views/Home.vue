@@ -7,6 +7,7 @@ import SegmentContent from '@/components/Home/SegmentContent.vue'
 import TxIcon from '@/components/Home/TxIcon.vue'
 import { useConfirmBackToQuit } from '@/composables/useConfirmBackToQuit'
 import { injKaspa, Kaspa } from '@/injectives'
+import { useAccountStore } from '@/stores/account'
 import { useBalanceStore } from '@/stores/balance'
 import {
   blockTimeToDate,
@@ -32,21 +33,26 @@ import { computed, inject, ref } from 'vue'
 useConfirmBackToQuit()
 
 const kaspa = inject(injKaspa) as Kaspa
-const balanceStore = useBalanceStore()
+const accountStore = useAccountStore()
 const loading = ref(true)
+
+onIonViewWillEnter(async () => {
+  await kaspa.init()
+  await accountStore.init()
+
+  kaspa.trackAddresses({
+    addresses: [accountStore.primary!.address],
+    onChangeBalance: () => fetchAll(),
+  })
+
+  await fetchAll()
+})
+
+const balanceStore = useBalanceStore()
 const isAndroid = computed(() => isPlatform('android'))
 
 const utxos = computed(() => {
-  return balanceStore.utxos
-    .map((e, i) => ({
-      id: i,
-      ...e,
-      utxoEntry: {
-        ...e.utxoEntry,
-        amount: kaspa.toKas(e.utxoEntry.amount),
-      },
-    }))
-    .sort((a, b) => a.id - b.id)
+  return balanceStore.utxos.map((e, id) => ({ ...e, id }))
 })
 
 const transactions = computed(() => {
@@ -78,8 +84,6 @@ const fetchAll = async () => {
   }
 }
 
-onIonViewWillEnter(() => fetchAll())
-
 async function handleRefresh(event: any) {
   await fetchAll()
   event.target.complete()
@@ -101,8 +105,8 @@ function openTxInBrowser(txId: string) {
         <IonRefresherContent />
       </IonRefresher>
       <div class="scroll-container">
-        <Header />
-        <AccountDisplay />
+        <Header :loading="loading" />
+        <AccountDisplay :loading="loading" />
         <Segment />
         <IonSegmentView class="mt-4">
           <SegmentContent
@@ -136,10 +140,10 @@ function openTxInBrowser(txId: string) {
               <TxIcon />
             </template>
             <template #content-header-left="{ item }">
-              {{ item.utxoEntry.amount }} {{ kaspa.ticker.value }}
+              {{ kaspa.toKas(item.amount) }} {{ kaspa.ticker.value }}
             </template>
             <template #content-header-right="{ item }">
-              DAA {{ formatBlockDaaScore(item.utxoEntry.blockDaaScore) }}
+              DAA {{ formatBlockDaaScore(item.blockDaaScore.toString()) }}
             </template>
             <template #content="{ item }">{{
               shortenHash(item.outpoint.transactionId, isAndroid ? 13 : 15)

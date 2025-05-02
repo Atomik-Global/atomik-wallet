@@ -47,36 +47,18 @@ defineProps<{
         :min-item-size="100"
         :items="items"
       >
-        <template #default="{ item, isAndroid }">
+        <template #default="{ item }">
           <IonItem button @click="emit('click', item)">
             <slot name="content-icon" :item="item" />
             <IonLabel class="content-body">
               <div class="content-body-header">
-                <slot
-                  name="content-header-left"
-                  v-bind="{
-                    item,
-                    isAndroid,
-                  }"
-                />
+                <slot name="content-header-left" v-bind="{ item }" />
                 <div style="text-align: right">
-                  <slot
-                    name="content-header-right"
-                    v-bind="{
-                      item,
-                      isAndroid,
-                    }"
-                  />
+                  <slot name="content-header-right" v-bind="{ item }" />
                 </div>
               </div>
               <div class="content-body font-mono">
-                <slot
-                  name="content"
-                  v-bind="{
-                    item,
-                    isAndroid,
-                  }"
-                />
+                <slot name="content" v-bind="{ item }" />
               </div>
             </IonLabel>
           </IonItem>

@@ -1,9 +1,20 @@
 <script setup lang="ts">
 import { injKaspa, Kaspa } from '@/injectives'
 import { useBalanceStore } from '@/stores/balance'
-import { IonButton, IonChip, IonIcon, IonText, useIonRouter } from '@ionic/vue'
+import {
+  IonButton,
+  IonChip,
+  IonIcon,
+  IonSkeletonText,
+  IonText,
+  useIonRouter,
+} from '@ionic/vue'
 import { arrowDown, arrowUp, globeOutline } from 'ionicons/icons'
 import { inject } from 'vue'
+
+defineProps<{
+  loading: boolean
+}>()
 
 const kaspa = inject(injKaspa) as Kaspa
 
@@ -20,10 +31,11 @@ const router = useIonRouter()
         <IonText>{{ kaspa.networkId.value.split('-').join(' ') }}</IonText>
       </IonChip>
     </div>
-    <div class="balance">
+    <div v-if="!loading" class="balance">
       <IonText>{{ balanceStore.balance }}</IonText>
       <IonText class="balance-unit">{{ kaspa.ticker.value }}</IonText>
     </div>
+    <IonSkeletonText v-else animated class="skeleton-balance" />
     <div class="account-card-footer">
       <div>
         <IonText class="balance-fiat">-</IonText>
@@ -136,5 +148,12 @@ const router = useIonRouter()
   right: 100%;
   background-color: var(--ion-background-color);
   border-top-right-radius: 20px;
+}
+
+.skeleton-balance {
+  height: 2rem;
+  width: 6rem;
+  border-radius: 999px;
+  background-color: var(--ion-background-color-step-800);
 }
 </style>

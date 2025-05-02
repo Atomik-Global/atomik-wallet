@@ -32,14 +32,16 @@ import '@ionic/vue/css/text-transformation.css'
 import '@ionic/vue/css/palettes/dark.system.css'
 
 /* Theme variables */
-import './theme/variables.css'
 import './theme/globals.css'
+import './theme/variables.css'
 
 /* 3rd party dependencies */
 import { createPinia } from 'pinia'
 // @ts-ignore
 import { DynamicScroller } from 'vue-virtual-scroller'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
+import { useKaspa } from './composables/useKaspa'
+import { injKaspa } from './injectives'
 
 const pinia = createPinia()
 
@@ -50,6 +52,7 @@ const app = createApp(App)
   .use(router)
   .use(pinia)
 
+app.provide(injKaspa, useKaspa())
 app.component('DynamicScroller', DynamicScroller)
 
 router.isReady().then(() => {
