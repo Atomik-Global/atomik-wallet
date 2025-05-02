@@ -172,16 +172,11 @@ export const useKaspa = () => {
     )
   }
 
-  function signTransaction(data: {
-    tx: Kaspa.Transaction
-    privateKey: (Kaspa.PrivateKey | Kaspa.HexString | Uint8Array)[]
-    verifySig: boolean
-  }) {
-    return kaspa.value!.signTransaction(
-      data.tx,
-      data.privateKey,
-      data.verifySig,
-    )
+  function generateTransaction(data: Kaspa.IGeneratorSettingsObject) {
+    return new kaspa.value!.Generator({
+      ...data,
+      networkId: networkId.value,
+    })
   }
 
   function calculateTransactionFee(tx: Kaspa.Transaction) {
@@ -258,6 +253,7 @@ export const useKaspa = () => {
     createTransactions,
     calculateTransactionFee,
     getBalanceByAddress,
+    generateTransaction,
   }
 }
 
@@ -278,12 +274,4 @@ interface TrackAddressProps {
 interface AddressEventListenerProps {
   event: Kaspa.UtxoProcessorEvent<keyof Kaspa.UtxoProcessorEventMap>
   onChangeBalance?: BalanceChangeCallback
-}
-
-interface TransferKasProps {
-  fromAddress: string
-  toAddress: string
-  amount: number
-  priority: 'low' | 'normal' | 'high'
-  privateKey: string
 }

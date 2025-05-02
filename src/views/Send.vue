@@ -14,23 +14,21 @@ import {
   IonTextarea,
   IonTitle,
   IonToolbar,
-  onIonViewWillEnter,
   toastController,
   useIonRouter,
 } from '@ionic/vue'
 
 import { useBiometric } from '@/composables/useBiometric'
-import { WalletAccount } from '@/composables/useKaspa'
 import {
-  K_ACCOUNT_PRIMARY,
   K_USE_BIOMETRIC,
   useSecureStorage,
 } from '@/composables/useSecureStorage'
 import { injKaspa, Kaspa } from '@/injectives'
-import type { UtxoEntry } from '@/kaspa/kaspa'
+import { useAccountStore } from '@/stores/account'
 import { useBalanceStore } from '@/stores/balance'
 import { Clipboard } from '@capacitor/clipboard'
-import { computed, inject, reactive, ref, shallowRef, watch } from 'vue'
+import { useDebounce } from '@vueuse/core'
+import { computed, inject, reactive, ref, watchEffect } from 'vue'
 
 type PriorityFee = 'low' | 'normal' | 'high'
 
@@ -38,98 +36,20 @@ const MIN_TRANSFER_AMOUNT = 0.2 // KAS
 
 const kaspa = inject(injKaspa) as Kaspa
 const balanceStore = useBalanceStore()
+const accountStore = useAccountStore()
 const storage = useSecureStorage()
 const biometric = useBiometric()
 const router = useIonRouter()
 const feeEstimateRaw = reactive({ low: 1, normal: 1, high: 1 })
-const account = shallowRef<WalletAccount>()
-const utxoEntries = shallowRef<UtxoEntry[]>([])
+const networkFee = ref(0)
+const isLoadingFee = ref(true)
 
-onIonViewWillEnter(async () => {
-  const acc = await storage.getItem(K_ACCOUNT_PRIMARY)
-  account.value = JSON.parse(acc!) as WalletAccount
+const amount = ref<number>()
+const toAddress = ref<string>()
+const priority = ref<PriorityFee>('normal')
 
-  const estimate = await kaspa.getFeeEstimate()
-  Object.assign(feeEstimateRaw, estimate)
-
-  const { entries } = await kaspa.getUtxoEntries([account.value.address])
-  utxoEntries.value = entries
-})
-
-const state = reactive<{
-  amount: number | null
-  toAddress: string | null
-  priority: PriorityFee
-}>({
-  amount: null,
-  toAddress: null,
-  priority: 'normal',
-})
-
-const transaction = computed(() => {
-  if (!state.toAddress || !state.amount || !account.value) {
-    return null
-  }
-
-  const address = state.toAddress
-  const amount = kaspa.toSompi(state.amount.toString())
-  const priorityFee = kaspa.toSompi(
-    feeEstimate.value[state.priority].toString(),
-  )
-
-  return kaspa.createTransaction({
-    entries: utxoEntries.value,
-    outputs: [{ address, amount }],
-    priorityFee,
-  })
-})
-
-const txMass = computed(() => {
-  if (!transaction.value) {
-    return 0
-  }
-
-  const mass = kaspa.calculateTransactionMass(transaction.value)
-  if (mass < 10000n) return 10000
-
-  return Number(mass)
-})
-
-const feeEstimate = computed(() => ({
-  low: kaspa.toKasRaw(feeEstimateRaw.low * txMass.value),
-  normal: kaspa.toKasRaw(feeEstimateRaw.normal * txMass.value),
-  high: kaspa.toKasRaw(feeEstimateRaw.high * txMass.value),
-}))
-
-const isBalanceInsufficient = ref(false)
-const isAmountTooLow = ref(false)
-const isInvalidAddress = ref(false)
-const allowSubmit = computed(() => {
-  return (
-    isBalanceInsufficient.value === false &&
-    isAmountTooLow.value === false &&
-    isInvalidAddress.value === false &&
-    state.toAddress !== null &&
-    state.toAddress !== ''
-  )
-})
-
-watch(
-  () => state.amount,
-  (value) => {
-    if (!value) return
-    isBalanceInsufficient.value = value > balanceStore.balance
-    isAmountTooLow.value = value < MIN_TRANSFER_AMOUNT
-  },
-)
-
-watch(
-  () => state.toAddress,
-  (value) => {
-    if (!value) return
-    isInvalidAddress.value = !kaspa.isValidAddress(value)
-  },
-)
+const amountDebounced = useDebounce(amount, 800)
+const toAddressDebounced = useDebounce(toAddress, 800)
 
 const amountError = computed(() => {
   if (isBalanceInsufficient.value) {
@@ -143,8 +63,64 @@ const amountError = computed(() => {
   return undefined
 })
 
+const feeEstimate = computed(() => ({
+  low: kaspa.toKasRaw(feeEstimateRaw.low * networkFee.value),
+  normal: kaspa.toKasRaw(feeEstimateRaw.normal * networkFee.value),
+  high: kaspa.toKasRaw(feeEstimateRaw.high * networkFee.value),
+}))
+
+watchEffect(async () => {
+  if (amount.value) {
+    isBalanceInsufficient.value = amount.value > balanceStore.balance
+    isAmountTooLow.value = amount.value < MIN_TRANSFER_AMOUNT
+  }
+
+  if (toAddress.value) {
+    isInvalidAddress.value = !kaspa.isValidAddress(toAddress.value)
+  }
+
+  if (amountDebounced.value && toAddressDebounced.value) {
+    isLoadingFee.value = true
+
+    await balanceStore.fetchUtxos()
+
+    let amountSompi = kaspa.toSompi(amount.value!.toString())
+    if (amount.value === balanceStore.balance) {
+      const gasReserve = 0.2 // prevents insufficient funds
+      amountSompi = kaspa.toSompi((amount.value - gasReserve).toString())
+    }
+
+    const payload = {
+      changeAddress: accountStore.primary!.address,
+      entries: balanceStore.utxos,
+      outputs: [{ address: toAddressDebounced.value, amount: amountSompi }],
+      priorityFee: 0n,
+    }
+
+    const generator = kaspa.generateTransaction(payload)
+    const estimate = await generator.estimate()
+    networkFee.value = Number(estimate.fees)
+
+    isLoadingFee.value = false
+  }
+})
+
+const isBalanceInsufficient = ref(false)
+const isAmountTooLow = ref(false)
+const isInvalidAddress = ref(false)
+const allowSubmit = computed(() => {
+  return (
+    isBalanceInsufficient.value === false &&
+    isAmountTooLow.value === false &&
+    isInvalidAddress.value === false &&
+    isLoadingFee.value === false &&
+    toAddress.value !== null &&
+    toAddress.value !== ''
+  )
+})
+
 function setPriorityFee(value: PriorityFee) {
-  state.priority = value
+  priority.value = value
 }
 
 async function paste() {
@@ -162,16 +138,16 @@ async function paste() {
     return
   }
 
-  state.toAddress = content.value
+  toAddress.value = content.value
 }
 
 function setAmountByPercentage(percentValue: number) {
   const value = balanceStore.getByPercentage(percentValue)
-  state.amount = value
+  amount.value = value
 }
 
 function getColorByPercentage(percentValue: number) {
-  const matches = balanceStore.matchPercentage(percentValue, state.amount || 0)
+  const matches = balanceStore.matchPercentage(percentValue, amount.value || 0)
 
   if (!matches || balanceStore.balance === 0) {
     return 'light'
@@ -181,18 +157,13 @@ function getColorByPercentage(percentValue: number) {
 }
 
 async function executeTransfer() {
-  if (!transaction.value) {
-    return
-  }
-
-  const prioFee = feeEstimate.value[state.priority]
-
+  const prioFee = feeEstimate.value[priority.value]
   let priorityFee = kaspa.toSompi(prioFee.toString())
-  let finalAmount = state.amount!
+  let finalAmount = amount.value!
 
   // if max amount needs to be transferred, reserve some for network fee.
   // required to prevent "Insufficient fund" error.
-  if (state.amount === balanceStore.balance) {
+  if (amount.value === balanceStore.balance) {
     priorityFee = 0n
     finalAmount -= prioFee
   }
@@ -200,13 +171,13 @@ async function executeTransfer() {
   const finalAmountSompi = kaspa.toSompi(finalAmount.toString())
 
   const payload = {
-    changeAddress: account.value!.address,
-    entries: utxoEntries.value,
-    outputs: [{ address: state.toAddress!, amount: finalAmountSompi }],
+    changeAddress: accountStore.primary!.address,
+    entries: balanceStore.utxos,
+    outputs: [{ address: toAddress.value!, amount: finalAmountSompi }],
     priorityFee,
   }
 
-  const res = await kaspa.transferKas(payload, account.value!.privkey)
+  const res = await kaspa.transferKas(payload, accountStore.primary!.privkey)
   router.replace(`/home/sent/${res}`)
 }
 
@@ -255,7 +226,7 @@ async function submit() {
       </IonHeader>
       <IonItem class="mt-4">
         <IonInput
-          v-model="state.amount"
+          v-model="amount"
           autofocus
           class="mt-4"
           placeholder="Amount"
@@ -319,7 +290,7 @@ async function submit() {
       <div class="mt-4">
         <IonItem>
           <IonTextarea
-            v-model="state.toAddress"
+            v-model="toAddress"
             label="To Address"
             label-placement="floating"
             auto-grow
@@ -342,7 +313,7 @@ async function submit() {
           <IonCol size="4">
             <div
               class="priority-fee-card"
-              :class="{ active: state.priority === 'low' }"
+              :class="{ active: priority === 'low' }"
               @click="setPriorityFee('low')"
             >
               <div class="priority-fee-card-title">Low</div>
@@ -354,7 +325,7 @@ async function submit() {
           <IonCol size="4">
             <div
               class="priority-fee-card"
-              :class="{ active: state.priority === 'normal' }"
+              :class="{ active: priority === 'normal' }"
               @click="setPriorityFee('normal')"
             >
               <div class="priority-fee-card-title">Normal</div>
@@ -366,7 +337,7 @@ async function submit() {
           <IonCol size="4">
             <div
               class="priority-fee-card"
-              :class="{ active: state.priority === 'high' }"
+              :class="{ active: priority === 'high' }"
               @click="setPriorityFee('high')"
             >
               <div class="priority-fee-card-title">High</div>
