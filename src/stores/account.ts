@@ -14,7 +14,6 @@ export const useAccountStore = defineStore('account', () => {
   const accounts = ref<WalletAccount[]>([])
 
   const init = async () => {
-    console.log('INIT ACCOUNT')
     await initPrimary()
     await initAccounts()
   }
