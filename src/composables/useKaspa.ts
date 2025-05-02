@@ -30,6 +30,8 @@ export const useKaspa = () => {
     //   url = config.public.kaspa.node
     // }
 
+    await dispose()
+
     rpc.value = new kas.RpcClient({
       encoding: kas.Encoding.Borsh,
       networkId: networkId.value,
@@ -51,6 +53,15 @@ export const useKaspa = () => {
       if (processor.value.isActive) {
         await processor.value.stop()
         await processor.value.start()
+      }
+    }
+  }
+
+  async function dispose() {
+    if (rpc.value && rpc.value.isConnected) {
+      if (processor.value?.isActive) {
+        await untrackAddresses()
+        await processor.value.stop()
       }
     }
   }
@@ -230,6 +241,7 @@ export const useKaspa = () => {
 
   return {
     init,
+    dispose,
     rpc,
     isMainnet,
     networkId,
