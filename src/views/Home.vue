@@ -54,7 +54,6 @@ onIonViewWillEnter(async () => {
     addresses: [accountStore.primary!.address],
     onChangeBalance: async () => {
       await balanceStore.fetchBalance()
-      await balanceStore.fetchUtxos()
 
       // prevent multiple indexer fetch
       // prevent skeleton from appearing
@@ -65,7 +64,9 @@ onIonViewWillEnter(async () => {
       isLoadingTxsInBg.value = true
       setTimeout(() => {
         balanceStore.fetchTransactions().then(() => {
-          isLoadingTxsInBg.value = false
+          balanceStore.fetchUtxos().then(() => {
+            isLoadingTxsInBg.value = false
+          })
         })
       }, 5000) // 5s (sweetspot), wait for the indexer
     },
