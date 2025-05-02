@@ -5,3 +5,7 @@
 .font-mono {
   font-family: monospace;
 }
+
+.p-0 {
+  padding: 0 !important;
+}

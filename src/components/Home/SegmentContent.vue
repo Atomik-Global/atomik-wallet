@@ -13,6 +13,7 @@ const emit = defineEmits<{
 
 defineProps<{
   id: string
+  keyField: string
   items: any[]
   loading: boolean
 }>()
@@ -42,22 +43,40 @@ defineProps<{
     </div>
     <IonList v-else>
       <DynamicScroller
-        key-field="transaction_id"
+        :key-field="keyField"
         :min-item-size="100"
         :items="items"
       >
-        <template #default="{ item }">
+        <template #default="{ item, isAndroid }">
           <IonItem button @click="emit('click', item)">
             <slot name="content-icon" :item="item" />
             <IonLabel class="content-body">
               <div class="content-body-header">
-                <slot name="content-header-left" :item="item" />
+                <slot
+                  name="content-header-left"
+                  v-bind="{
+                    item,
+                    isAndroid,
+                  }"
+                />
                 <div style="text-align: right">
-                  <slot name="content-header-right" :item="item" />
+                  <slot
+                    name="content-header-right"
+                    v-bind="{
+                      item,
+                      isAndroid,
+                    }"
+                  />
                 </div>
               </div>
               <div class="content-body font-mono">
-                <slot name="content" :item="item" />
+                <slot
+                  name="content"
+                  v-bind="{
+                    item,
+                    isAndroid,
+                  }"
+                />
               </div>
             </IonLabel>
           </IonItem>
@@ -99,7 +118,7 @@ defineProps<{
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .content-body {
