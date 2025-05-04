@@ -126,15 +126,13 @@ async function storePhraseAndRedirect() {
 
       <div class="ion-padding action-wrapper">
         <IonButton
-          v-if="!isStoringPhrase"
+          :disabled="isStoringPhrase"
           color="dark"
           expand="block"
           @click="storePhraseAndRedirect"
         >
-          Create new Wallet
-        </IonButton>
-        <IonButton v-else expand="block" disabled>
-          <IonSpinner name="dots" />
+          <IonSpinner v-if="isStoringPhrase" name="dots" />
+          <IonText v-else>Create new Wallet</IonText>
         </IonButton>
       </div>
     </IonContent>
