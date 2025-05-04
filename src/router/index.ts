@@ -2,20 +2,15 @@ import {
   K_USER_ONBOARDED,
   useSecureStorage,
 } from '@/composables/useSecureStorage'
-import Splash from '@/views/Splash.vue'
+import Onboarding from '@/views/Onboarding.vue'
 import { createRouter, createWebHistory } from '@ionic/vue-router'
 import { RouteRecordRaw } from 'vue-router'
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    name: 'Splash',
-    component: Splash,
-  },
-  {
-    path: '/onboarding',
     name: 'Onboarding',
-    component: () => import('@/views/Onboarding.vue'),
+    component: Onboarding,
     meta: {
       unOnboardedOnly: true,
     },

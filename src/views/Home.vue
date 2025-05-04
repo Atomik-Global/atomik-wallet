@@ -44,6 +44,7 @@ onIonViewWillEnter(async () => {
   isLoadingBalance.value = true
   isLoadingTxs.value = true // show loading after switching account
 
+  await kaspa.connectRpc()
   await accountStore.loadAccounts()
   kaspa.trackAddresses({
     addresses: [accountStore.primary!.address],

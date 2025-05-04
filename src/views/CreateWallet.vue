@@ -3,6 +3,7 @@ import ClipboardCopy from '@/components/ClipboardCopy.vue'
 import { injKaspa, Kaspa } from '@/injectives'
 import { useAccountStore } from '@/stores/account'
 import { useNetworkStore } from '@/stores/network'
+import { NetworkType } from '@/types'
 import {
   IonButton,
   IonCol,
@@ -47,10 +48,20 @@ async function storePhraseAndRedirect() {
   try {
     isStoringPhrase.value = true
 
-    const account = await kaspa.createWalletFromSeed(
+    const testnetAccount = await kaspa.createWalletFromSeed(
       seed.value,
-      networkStore.networkId,
+      NetworkType.testnet,
     )
+
+    const mainnetAccount = await kaspa.createWalletFromSeed(
+      seed.value,
+      NetworkType.testnet,
+    )
+
+    const account = {
+      [NetworkType.mainnet]: mainnetAccount,
+      [NetworkType.testnet]: testnetAccount,
+    }[networkStore.networkId]
 
     await accountStore.setPrimary(account)
     router.replace('/setup/pin')

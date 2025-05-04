@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAccountStore } from '@/stores/account'
 import { useNetworkStore } from '@/stores/network'
+import { NetworkType } from '@/types'
 import {
   IonButton,
   IonInput,
@@ -33,7 +34,8 @@ const isCreatingAccount = ref(false)
 const createAccount = async () => {
   try {
     isCreatingAccount.value = true
-    await accountStore.createAccount(name.value, networkStore.networkId)
+    await accountStore.createAccount(name.value, NetworkType.testnet)
+    await accountStore.createAccount(name.value, NetworkType.mainnet)
     model.value = false
     name.value = ''
   } catch (error) {

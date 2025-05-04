@@ -1,34 +1,29 @@
 <script setup lang="ts">
 import { injKaspa, Kaspa } from '@/injectives'
 import { useNetworkStore } from '@/stores/network'
-import {
-  IonContent,
-  IonPage,
-  IonSpinner,
-  onIonViewWillEnter,
-  useIonRouter,
-} from '@ionic/vue'
-import { inject } from 'vue'
+import { IonContent, IonPage, IonSpinner } from '@ionic/vue'
+import { inject, onBeforeMount, ref } from 'vue'
 
 const kaspa = inject(injKaspa) as Kaspa
 const networkStore = useNetworkStore()
-const router = useIonRouter()
+const isReady = ref(false)
 
-onIonViewWillEnter(async () => {
+onBeforeMount(async () => {
+  isReady.value = false
   await kaspa.init(networkStore.networkId)
-  await kaspa.connectRpc()
-  router.replace('/onboarding')
+  isReady.value = true
 })
 </script>
 
 <template>
-  <IonPage>
+  <IonPage v-if="!isReady">
     <IonContent fullscreen>
       <div class="container">
         <IonSpinner />
       </div>
     </IonContent>
   </IonPage>
+  <slot v-else />
 </template>
 
 <style scoped>
