@@ -9,6 +9,7 @@ import { useConfirmBackToQuit } from '@/composables/useConfirmBackToQuit'
 import { injKaspa, Kaspa } from '@/injectives'
 import { useAccountStore } from '@/stores/account'
 import { useBalanceStore } from '@/stores/balance'
+import { useNetworkStore } from '@/stores/network'
 import {
   blockTimeToDate,
   formatBlockDaaScore,
@@ -33,6 +34,7 @@ import { computed, inject, ref } from 'vue'
 useConfirmBackToQuit()
 
 const kaspa = inject(injKaspa) as Kaspa
+const networkStore = useNetworkStore()
 const accountStore = useAccountStore()
 const isLoadingBalance = ref(true)
 const isLoadingTxs = ref(true)
@@ -42,7 +44,7 @@ onIonViewWillEnter(async () => {
   isLoadingBalance.value = true
   isLoadingTxs.value = true // show loading after switching account
 
-  await kaspa.init()
+  await kaspa.init(networkStore.networkId)
   await accountStore.loadAccounts()
   await kaspa.connectRpc()
 
@@ -119,7 +121,7 @@ async function handleRefresh(event: any) {
 }
 
 function openTxInBrowser(txId: string) {
-  Browser.open({ url: `${kaspa.explorerUrl.value}/txs/${txId}` })
+  Browser.open({ url: `${networkStore.explorerUrl}/txs/${txId}` })
 }
 </script>
 
@@ -149,7 +151,7 @@ function openTxInBrowser(txId: string) {
               <TxIcon :item="item.outputs[0].script_public_key_address" />
             </template>
             <template #content-header-left="{ item }">
-              {{ item.outputs[0].amount }} {{ kaspa.ticker.value }}
+              {{ item.outputs[0].amount }} {{ networkStore.ticker }}
             </template>
             <template #content-header-right="{ item }">{{
               toHumanReadableDate(blockTimeToDate(item.accepting_block_time))
@@ -169,7 +171,7 @@ function openTxInBrowser(txId: string) {
               <TxIcon />
             </template>
             <template #content-header-left="{ item }">
-              {{ kaspa.toKas(item.amount) }} {{ kaspa.ticker.value }}
+              {{ kaspa.toKas(item.amount) }} {{ networkStore.ticker }}
             </template>
             <template #content-header-right="{ item }">
               DAA {{ formatBlockDaaScore(item.blockDaaScore.toString()) }}

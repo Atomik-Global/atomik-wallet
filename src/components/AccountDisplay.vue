@@ -2,6 +2,7 @@
 import { injKaspa, Kaspa } from '@/injectives'
 import { useAccountStore } from '@/stores/account'
 import { useBalanceStore } from '@/stores/balance'
+import { useNetworkStore } from '@/stores/network'
 import { formatCurrencyAgnostic } from '@/utils/helpers'
 import {
   IonButton,
@@ -20,6 +21,7 @@ defineProps<{
 
 const kaspa = inject(injKaspa) as Kaspa
 
+const networkStore = useNetworkStore()
 const accountStore = useAccountStore()
 const balanceStore = useBalanceStore()
 const router = useIonRouter()
@@ -29,14 +31,14 @@ const router = useIonRouter()
   <div class="account-card mt-4">
     <div class="account-card-header">
       <IonText>{{ accountStore.primary?.name ?? 'Primary Account' }}</IonText>
-      <IonChip :color="kaspa.isMainnet.value ? 'light' : 'warning'">
+      <IonChip :color="networkStore.isMainnet ? 'light' : 'warning'">
         <IonIcon :icon="globeOutline"></IonIcon>
-        <IonText>{{ kaspa.networkId.value.split('-').join(' ') }}</IonText>
+        <IonText>{{ networkStore.networkId.split('-').join(' ') }}</IonText>
       </IonChip>
     </div>
     <div v-if="!loading" class="balance">
       <IonText>{{ formatCurrencyAgnostic(balanceStore.balance) }}</IonText>
-      <IonText class="balance-unit">{{ kaspa.ticker.value }}</IonText>
+      <IonText class="balance-unit">{{ networkStore.ticker }}</IonText>
     </div>
     <IonSkeletonText v-else animated class="skeleton-balance" />
     <div class="account-card-footer">

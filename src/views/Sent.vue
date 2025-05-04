@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { injKaspa, Kaspa } from '@/injectives'
+import { useNetworkStore } from '@/stores/network'
 import { Browser } from '@capacitor/browser'
 import {
   IonButton,
@@ -9,17 +9,16 @@ import {
   useIonRouter,
 } from '@ionic/vue'
 import { checkmarkCircle, linkOutline } from 'ionicons/icons'
-import { computed, inject } from 'vue'
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const router = useIonRouter()
-const kaspa = inject(injKaspa) as Kaspa
-
+const networkStore = useNetworkStore()
 const txId = computed(() => route.params.txId as string)
 
 function viewOnChain() {
-  Browser.open({ url: `${kaspa.explorerUrl.value}/txs/${txId.value}` })
+  Browser.open({ url: `${networkStore.explorerUrl}/txs/${txId.value}` })
 }
 </script>
 

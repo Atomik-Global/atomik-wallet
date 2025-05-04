@@ -20,3 +20,5 @@ export interface AddressEventListenerProps {
   event: UtxoProcessorEvent<keyof UtxoProcessorEventMap>
   onChangeBalance?: BalanceChangeCallback
 }
+
+export type NetworkOption = 'mainnet' | 'testnet-10'

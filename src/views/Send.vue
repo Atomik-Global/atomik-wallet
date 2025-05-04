@@ -28,6 +28,7 @@ import {
 import { injKaspa, Kaspa } from '@/injectives'
 import { useAccountStore } from '@/stores/account'
 import { useBalanceStore } from '@/stores/balance'
+import { useNetworkStore } from '@/stores/network'
 import { Clipboard } from '@capacitor/clipboard'
 import { useDebounce } from '@vueuse/core'
 import { computed, inject, reactive, ref, watchEffect } from 'vue'
@@ -38,6 +39,7 @@ type PriorityFee = 'low' | 'normal' | 'high'
 const MIN_TRANSFER_AMOUNT = 0.2 // KAS
 
 const kaspa = inject(injKaspa) as Kaspa
+const networkStore = useNetworkStore()
 const balanceStore = useBalanceStore()
 const accountStore = useAccountStore()
 const storage = useSecureStorage()
@@ -77,7 +79,7 @@ const amountError = computed(() => {
   }
 
   if (isAmountTooLow.value) {
-    return `Minimum transfer is ${MIN_TRANSFER_AMOUNT} ${kaspa.ticker.value}`
+    return `Minimum transfer is ${MIN_TRANSFER_AMOUNT} ${networkStore.ticker}`
   }
 
   return undefined
@@ -96,7 +98,7 @@ watchEffect(async () => {
   }
 
   if (toAddress.value) {
-    isInvalidAddress.value = !kaspa.isValidAddress(toAddress.value)
+    isInvalidAddress.value = !networkStore.isValidAddress(toAddress.value)
   }
 
   if (amountDebounced.value && toAddressDebounced.value) {
@@ -117,7 +119,7 @@ watchEffect(async () => {
       priorityFee: 0n,
     }
 
-    const generator = kaspa.generateTransaction(payload)
+    const generator = kaspa.generateTransaction(payload, networkStore.networkId)
     const estimate = await generator.estimate()
     networkFee.value = Number(estimate.fees)
 
@@ -146,7 +148,7 @@ function setPriorityFee(value: PriorityFee) {
 async function paste() {
   const content = await Clipboard.read()
 
-  if (!kaspa.isValidAddress(content.value)) {
+  if (!networkStore.isValidAddress(content.value)) {
     const toast = await toastController.create({
       header: 'Invalid address',
       message: 'Please paste a correct Kaspa address',
@@ -197,8 +199,13 @@ async function executeTransfer() {
     priorityFee,
   }
 
-  const res = await kaspa.transferKas(payload, accountStore.primary!.privkey)
-  router.replace(`/home/sent/${res}`)
+  const txId = await kaspa.transferKas(
+    payload,
+    accountStore.primary!.privkey,
+    networkStore.networkId,
+  )
+
+  router.replace(`/home/sent/${txId}`)
 }
 
 const isSubmitting = ref(false)
@@ -250,7 +257,7 @@ async function submit() {
           autofocus
           class="mt-4"
           placeholder="Amount"
-          :label="kaspa.ticker.value"
+          :label="networkStore.ticker"
           label-placement="end"
           type="number"
           required
@@ -261,7 +268,7 @@ async function submit() {
       </div>
       <div class="ion-padding balance-display" style="padding-bottom: 0">
         <div>Available balance</div>
-        <div>{{ balanceStore.balance }} {{ kaspa.ticker.value }}</div>
+        <div>{{ balanceStore.balance }} {{ networkStore.ticker }}</div>
       </div>
       <IonGrid>
         <IonRow>
@@ -338,7 +345,7 @@ async function submit() {
             >
               <div class="priority-fee-card-title">Low</div>
               <div class="priority-fee-card-subtitle">
-                {{ feeEstimate.low }} {{ kaspa.ticker.value }}
+                {{ feeEstimate.low }} {{ networkStore.ticker }}
               </div>
             </div>
           </IonCol>
@@ -350,7 +357,7 @@ async function submit() {
             >
               <div class="priority-fee-card-title">Normal</div>
               <div class="priority-fee-card-subtitle">
-                {{ feeEstimate.normal }} {{ kaspa.ticker.value }}
+                {{ feeEstimate.normal }} {{ networkStore.ticker }}
               </div>
             </div>
           </IonCol>
@@ -362,7 +369,7 @@ async function submit() {
             >
               <div class="priority-fee-card-title">High</div>
               <div class="priority-fee-card-subtitle">
-                {{ feeEstimate.high }} {{ kaspa.ticker.value }}
+                {{ feeEstimate.high }} {{ networkStore.ticker }}
               </div>
             </div>
           </IonCol>

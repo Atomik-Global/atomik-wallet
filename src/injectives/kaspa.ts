@@ -2,27 +2,20 @@ import type * as k from '@/kaspa/kaspa'
 import url from '@/kaspa/kaspa_bg.wasm?url'
 import {
   AddressEventListenerProps,
+  NetworkOption,
   TrackAddressProps,
   WalletAccount,
 } from '@/types'
-import { computed, InjectionKey, readonly, ref, shallowRef } from 'vue'
+import { InjectionKey, ref, shallowRef } from 'vue'
 
 export const injectiveKAS = () => {
   const kaspa = shallowRef<typeof k>()
   const rpc = shallowRef<k.RpcClient>()
-  const networkId = ref<'mainnet' | 'testnet-10'>('testnet-10')
   const processor = shallowRef<k.UtxoProcessor>()
   const context = shallowRef<k.UtxoContext>()
-  const isMainnet = computed(() => networkId.value === 'mainnet')
-  const ticker = computed(() => (isMainnet.value ? 'KAS' : 'TKAS'))
   const trackedAddresses = ref<string[]>([])
-  const explorerUrl = computed(() => {
-    return isMainnet.value
-      ? 'https://explorer.kaspa.org'
-      : 'https://explorer-tn10.kaspa.org'
-  })
 
-  async function init() {
+  async function init(networkId: NetworkOption) {
     kaspa.value = await import(
       /* @vite-ignore */ new URL('../kaspa/kaspa.js', import.meta.url).href
     )
@@ -39,13 +32,13 @@ export const injectiveKAS = () => {
 
     rpc.value = new kas.RpcClient({
       encoding: kas.Encoding.Borsh,
-      networkId: networkId.value,
+      networkId,
       resolver: new kas.Resolver(),
       // url,
     })
 
     processor.value = new kas.UtxoProcessor({
-      networkId: networkId.value,
+      networkId,
       rpc: rpc.value,
     })
 
@@ -77,11 +70,14 @@ export const injectiveKAS = () => {
     return kaspa.value!.Mnemonic.random(12)
   }
 
-  async function createWalletFromSeed(seed: string): Promise<WalletAccount> {
+  async function createWalletFromSeed(
+    seed: string,
+    networkId: NetworkOption,
+  ): Promise<WalletAccount> {
     const xprv = new kaspa.value!.XPrv(seed).derivePath("m/44'/23'/0'/0/0")
     const priv = xprv.toPrivateKey()
     const pubk = priv.toPublicKey()
-    const addr = pubk.toAddress(networkId.value)
+    const addr = pubk.toAddress(networkId)
 
     return {
       seed,
@@ -132,11 +128,6 @@ export const injectiveKAS = () => {
     trackedAddresses.value = []
   }
 
-  function isValidAddress(address: string) {
-    const prefix = isMainnet.value ? 'kaspa:' : 'kaspatest:'
-    return address.startsWith(prefix)
-  }
-
   function toSompi(amount: string | null | undefined) {
     if (amount === null || amount === undefined) {
       return 0n
@@ -162,17 +153,23 @@ export const injectiveKAS = () => {
     return rpc.value!.getUtxosByAddresses(addresses)
   }
 
-  function createTransactions(settings: k.IGeneratorSettingsObject) {
+  function createTransactions(
+    settings: k.IGeneratorSettingsObject,
+    networkId: string,
+  ) {
     return kaspa.value!.createTransactions({
       ...settings,
-      networkId: networkId.value,
+      networkId,
     })
   }
 
-  function generateTransaction(data: k.IGeneratorSettingsObject) {
+  function generateTransaction(
+    data: k.IGeneratorSettingsObject,
+    networkId: string,
+  ) {
     return new kaspa.value!.Generator({
       ...data,
-      networkId: networkId.value,
+      networkId,
     })
   }
 
@@ -189,10 +186,11 @@ export const injectiveKAS = () => {
   async function transferKas(
     data: k.IGeneratorSettingsObject,
     privateKey: string,
+    networkId: string,
   ) {
     const { transactions, summary } = await kaspa.value!.createTransactions({
       ...data,
-      networkId: networkId.value,
+      networkId,
     })
 
     if (transactions.length > 0) {
@@ -221,15 +219,10 @@ export const injectiveKAS = () => {
     init,
     connectRpc,
     dispose,
-    networkId: readonly(networkId),
-    isMainnet,
-    ticker,
-    explorerUrl,
     generateMnemonic,
     createWalletFromSeed,
     trackAddresses,
     untrackAddresses,
-    isValidAddress,
     toSompi,
     toKas,
     toKasRaw,

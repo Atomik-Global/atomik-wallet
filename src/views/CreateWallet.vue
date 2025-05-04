@@ -2,6 +2,7 @@
 import ClipboardCopy from '@/components/ClipboardCopy.vue'
 import { injKaspa, Kaspa } from '@/injectives'
 import { useAccountStore } from '@/stores/account'
+import { useNetworkStore } from '@/stores/network'
 import {
   IonButton,
   IonCol,
@@ -22,6 +23,7 @@ import {
 import { computed, inject, ref } from 'vue'
 
 const kaspa = inject(injKaspa) as Kaspa
+const networkStore = useNetworkStore()
 const accountStore = useAccountStore()
 const phrase = ref('')
 const seed = ref('')
@@ -30,7 +32,7 @@ const initializing = ref(true)
 
 onIonViewWillEnter(() => {
   initializing.value = true
-  kaspa.init().then(() => {
+  kaspa.init(networkStore.networkId).then(() => {
     kaspa.generateMnemonic().then((mnemonic) => {
       phrase.value = mnemonic.phrase
       seed.value = mnemonic.toSeed()
@@ -44,7 +46,12 @@ const router = useIonRouter()
 async function storePhraseAndRedirect() {
   try {
     isStoringPhrase.value = true
-    const account = await kaspa.createWalletFromSeed(seed.value)
+
+    const account = await kaspa.createWalletFromSeed(
+      seed.value,
+      networkStore.networkId,
+    )
+
     await accountStore.setPrimary(account)
     router.replace('/setup/pin')
   } catch (error) {

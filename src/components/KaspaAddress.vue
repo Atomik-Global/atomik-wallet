@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { injKaspa, Kaspa } from '@/injectives'
+import { useNetworkStore } from '@/stores/network'
 import { shortenKaspaAddress } from '@/utils/helpers'
 import { Browser } from '@capacitor/browser'
 import { Clipboard } from '@capacitor/clipboard'
 import { IonIcon, toastController } from '@ionic/vue'
 import { copyOutline } from 'ionicons/icons'
-import { inject } from 'vue'
 
 const props = defineProps<{
   address: string
@@ -13,7 +12,7 @@ const props = defineProps<{
   shorten?: number
 }>()
 
-const kaspa = inject(injKaspa) as Kaspa
+const networkStore = useNetworkStore()
 
 const handleCopy = async () => {
   if (!props.copiable) {
@@ -35,7 +34,7 @@ const handleCopy = async () => {
 
 const viewOnChain = () => {
   Browser.open({
-    url: `${kaspa.explorerUrl.value}/addresses/${props.address}`,
+    url: `${networkStore.explorerUrl}/addresses/${props.address}`,
   })
 }
 </script>
