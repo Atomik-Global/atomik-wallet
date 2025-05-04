@@ -4,16 +4,35 @@ import {
   K_ACCOUNTS,
   useSecureStorage,
 } from '@/composables/useSecureStorage'
+import { injKaspa, Kaspa } from '@/injectives'
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, inject, ref } from 'vue'
 
 export const useAccountStore = defineStore('account', () => {
+  const kaspa = inject(injKaspa) as Kaspa
+
   const storage = useSecureStorage()
 
   const primary = ref<WalletAccount>()
   const accounts = ref<WalletAccount[]>([])
 
-  const init = async () => {
+  // [host] vs [primary]
+  //
+  // [host]
+  // Is the account the user created at first when creating a wallet
+  // on the onboarding page. Indicated by `undefined` on its name.
+  //
+  // [primary]
+  // is the account that is currently set as the default to be displayed
+  // and use thorough the app.
+  //
+  // Users can switch their [primary] account, but cannot remove or change
+  // the [host] account.
+  const host = computed(() => {
+    return accounts.value.find((e) => e.name === undefined)
+  })
+
+  const loadAccounts = async () => {
     await initPrimary()
     await initAccounts()
   }
@@ -46,6 +65,14 @@ export const useAccountStore = defineStore('account', () => {
       const newList = [primary.value, ...storedAccountsParsed]
       await storage.setItem(K_ACCOUNTS, JSON.stringify(newList))
     }
+
+    const updatedAccounts = await storage.getItem(K_ACCOUNTS)
+    if (!updatedAccounts) {
+      return
+    }
+
+    const parsedUpdatedAccounts = JSON.parse(updatedAccounts) as WalletAccount[]
+    accounts.value = parsedUpdatedAccounts
   }
 
   const setPrimary = async (account: WalletAccount) => {
@@ -53,10 +80,36 @@ export const useAccountStore = defineStore('account', () => {
     primary.value = account
   }
 
+  const isPrimary = (account: WalletAccount) => {
+    return account.privkey === primary.value?.privkey
+  }
+
+  const nameExists = (name: string) => {
+    const exists = accounts.value.find(
+      (e) => e.name?.toLowerCase() === name.toLowerCase(),
+    )
+
+    return exists || name.toLowerCase() === 'primary account'
+  }
+
+  const createAccount = async (name: string) => {
+    const mnemonic = await kaspa.generateMnemonic()
+    const seed = mnemonic.toSeed()
+    const account = await kaspa.createWalletFromSeed(seed)
+    const newList = [...accounts.value, { ...account, name } as WalletAccount]
+
+    await storage.setItem(K_ACCOUNTS, JSON.stringify(newList))
+    await loadAccounts()
+  }
+
   return {
-    init,
+    host,
+    loadAccounts,
     primary,
     accounts,
     setPrimary,
+    isPrimary,
+    createAccount,
+    nameExists,
   }
 })

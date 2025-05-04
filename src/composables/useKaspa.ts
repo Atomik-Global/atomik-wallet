@@ -121,6 +121,7 @@ export const useKaspa = () => {
       return addressEventListener({ event })
     })
     await processor.value!.stop()
+    trackedAddresses.value = []
   }
 
   function isValidAddress(address: string) {
@@ -235,6 +236,7 @@ export const useKaspa = () => {
 }
 
 export interface WalletAccount {
+  name?: string
   address: string
   pubkey: string
   privkey: string

@@ -39,8 +39,10 @@ const isLoadingTxs = ref(true)
 const isLoadingTxsInBg = ref(false)
 
 onIonViewWillEnter(async () => {
+  isLoadingTxs.value = true // show loading after switching account
+
+  await accountStore.loadAccounts()
   await kaspa.init()
-  await accountStore.init()
 
   await balanceStore.fetchBalance()
   await balanceStore.fetchUtxos()

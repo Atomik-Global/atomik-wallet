@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { injKaspa, Kaspa } from '@/injectives'
+import { useAccountStore } from '@/stores/account'
 import { useBalanceStore } from '@/stores/balance'
 import { formatCurrencyAgnostic } from '@/utils/helpers'
 import {
@@ -19,6 +20,7 @@ defineProps<{
 
 const kaspa = inject(injKaspa) as Kaspa
 
+const accountStore = useAccountStore()
 const balanceStore = useBalanceStore()
 const router = useIonRouter()
 </script>
@@ -26,7 +28,7 @@ const router = useIonRouter()
 <template>
   <div class="account-card mt-4">
     <div class="account-card-header">
-      <IonText>Primary Account</IonText>
+      <IonText>{{ accountStore.primary?.name ?? 'Primary Account' }}</IonText>
       <IonChip :color="kaspa.isMainnet.value ? 'light' : 'warning'">
         <IonIcon :icon="globeOutline"></IonIcon>
         <IonText>{{ kaspa.networkId.value.split('-').join(' ') }}</IonText>

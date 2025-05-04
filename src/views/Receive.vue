@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ActionFooter from '@/components/ActionFooter.vue'
 import ClipboardCopy from '@/components/ClipboardCopy.vue'
 import {
   K_ACCOUNT_PRIMARY,
@@ -9,6 +10,7 @@ import {
   IonButton,
   IonContent,
   IonHeader,
+  IonIcon,
   IonImg,
   IonPage,
   IonSkeletonText,
@@ -18,6 +20,7 @@ import {
   onIonViewWillEnter,
 } from '@ionic/vue'
 import { useQRCode } from '@vueuse/integrations/useQRCode.mjs'
+import { shareOutline } from 'ionicons/icons'
 import { ref } from 'vue'
 
 const storage = useSecureStorage()
@@ -62,11 +65,17 @@ async function shareAddress() {
       <div class="address-display">{{ address }}</div>
       <ClipboardCopy :item="address" />
 
-      <div v-if="canShare" class="footer ion-padding">
-        <IonButton color="dark" expand="block" @click="shareAddress"
-          >Share Address</IonButton
+      <ActionFooter>
+        <IonButton
+          v-if="canShare"
+          color="dark"
+          expand="block"
+          @click="shareAddress"
         >
-      </div>
+          <IonIcon slot="start" :icon="shareOutline" />
+          <IonText>Share Address</IonText>
+        </IonButton>
+      </ActionFooter>
     </IonContent>
   </IonPage>
 </template>
@@ -107,13 +116,5 @@ async function shareAddress() {
   line-height: 1.2rem;
   margin-top: 1rem;
   padding: 0 1rem;
-}
-
-.footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 2rem;
 }
 </style>

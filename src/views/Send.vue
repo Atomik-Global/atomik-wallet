@@ -19,6 +19,7 @@ import {
   useIonRouter,
 } from '@ionic/vue'
 
+import ActionFooter from '@/components/ActionFooter.vue'
 import { useBiometric } from '@/composables/useBiometric'
 import {
   K_USE_BIOMETRIC,
@@ -367,7 +368,7 @@ async function submit() {
           </IonCol>
         </IonRow>
       </IonGrid>
-      <div class="footer ion-padding">
+      <ActionFooter>
         <IonButton
           :disabled="!allowSubmit || isSubmitting"
           color="dark"
@@ -377,7 +378,7 @@ async function submit() {
           <template v-if="!isSubmitting">Submit Transaction</template>
           <IonSpinner v-else name="dots" />
         </IonButton>
-      </div>
+      </ActionFooter>
     </IonContent>
   </IonPage>
 </template>
@@ -442,13 +443,5 @@ async function submit() {
 
 .priority-fee-card.active > .priority-fee-card-subtitle {
   color: var(--ion-text-color-step-950);
-}
-
-.footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 2rem;
 }
 </style>

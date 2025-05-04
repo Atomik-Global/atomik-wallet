@@ -70,6 +70,14 @@ const routes: Array<RouteRecordRaw> = [
       onboardedOnly: true,
     },
   },
+  {
+    path: '/home/accounts/switch',
+    name: 'SwitchAccount',
+    component: () => import('@/views/SwitchAccount.vue'),
+    meta: {
+      onboardedOnly: true,
+    },
+  },
 ]
 
 const router = createRouter({

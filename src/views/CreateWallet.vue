@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import ClipboardCopy from '@/components/ClipboardCopy.vue'
-import { useSecureStorage } from '@/composables/useSecureStorage'
 import { injKaspa, Kaspa } from '@/injectives'
 import { useAccountStore } from '@/stores/account'
 import {
@@ -25,7 +24,6 @@ import { computed, inject, ref } from 'vue'
 
 const kaspa = inject(injKaspa) as Kaspa
 const accountStore = useAccountStore()
-const storage = useSecureStorage()
 const phrase = ref('')
 const seed = ref('')
 const splitPhrase = computed(() => phrase.value.split(' '))

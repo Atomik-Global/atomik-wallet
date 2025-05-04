@@ -37,7 +37,7 @@ function viewOnChain() {
           <IonIcon slot="start" :icon="linkOutline" />
           View on Chain
         </IonButton>
-        <IonButton color="light" expand="block" @click="router.back">
+        <IonButton color="light" expand="block" @click="router.back()">
           Go back Home
         </IonButton>
       </div>

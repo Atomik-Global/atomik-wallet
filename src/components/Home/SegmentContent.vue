@@ -27,12 +27,12 @@ defineProps<{
     <IonList v-if="loading">
       <IonItem v-for="i in 5" :key="i">
         <IonSkeletonText animated class="skeleton-icon" slot="start" />
-        <IonLabel class="content-body">
-          <div class="content-body-header">
+        <IonLabel class="content">
+          <div class="content-header">
             <IonSkeletonText animated class="skeleton-header-items" />
             <IonSkeletonText animated class="skeleton-header-items" />
           </div>
-          <div class="content-body font-mono">
+          <div class="content font-mono">
             <IonSkeletonText animated class="skeleton-content-signature" />
           </div>
         </IonLabel>
@@ -50,8 +50,8 @@ defineProps<{
         <template #default="{ item }">
           <IonItem button @click="emit('click', item)">
             <slot name="content-icon" :item="item" />
-            <IonLabel class="content-body">
-              <div class="content-body-header">
+            <IonLabel class="content">
+              <div class="content-header">
                 <slot name="content-header-left" v-bind="{ item }" />
                 <div style="text-align: right">
                   <slot name="content-header-right" v-bind="{ item }" />
@@ -87,16 +87,16 @@ defineProps<{
   width: 100%;
 }
 
-.content-body {
+.content {
   font-size: 16px;
 }
 
-.content-body > :not(:first-child) {
+.content > :not(:first-child) {
   margin-block-start: 0.5rem;
   margin-block-end: 0.5rem;
 }
 
-.content-body-header {
+.content-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
