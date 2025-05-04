@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { injKaspa, Kaspa } from '@/injectives'
 import { useAccountStore } from '@/stores/account'
 import { useBalanceStore } from '@/stores/balance'
 import { useNetworkStore } from '@/stores/network'
@@ -13,28 +12,36 @@ import {
   useIonRouter,
 } from '@ionic/vue'
 import { arrowDown, arrowUp, globeOutline } from 'ionicons/icons'
-import { inject } from 'vue'
+import { ref } from 'vue'
+import NetworkSwitcherModal from './Home/NetworkSwitcherModal.vue'
 
 defineProps<{
   loading: boolean
 }>()
 
-const kaspa = inject(injKaspa) as Kaspa
-
 const networkStore = useNetworkStore()
 const accountStore = useAccountStore()
 const balanceStore = useBalanceStore()
 const router = useIonRouter()
+
+const isNetworkSwitcherModalOpen = ref(false)
+const openSwitchNetworkModal = () => {
+  isNetworkSwitcherModalOpen.value = true
+}
 </script>
 
 <template>
   <div class="account-card mt-4">
     <div class="account-card-header">
       <IonText>{{ accountStore.primary?.name ?? 'Primary Account' }}</IonText>
-      <IonChip :color="networkStore.isMainnet ? 'light' : 'warning'">
+      <IonChip
+        :color="networkStore.isMainnet ? 'success' : 'warning'"
+        @click="openSwitchNetworkModal"
+      >
         <IonIcon :icon="globeOutline"></IonIcon>
         <IonText>{{ networkStore.networkId.split('-').join(' ') }}</IonText>
       </IonChip>
+      <NetworkSwitcherModal v-model="isNetworkSwitcherModalOpen" />
     </div>
     <div v-if="!loading" class="balance">
       <IonText>{{ formatCurrencyAgnostic(balanceStore.balance) }}</IonText>

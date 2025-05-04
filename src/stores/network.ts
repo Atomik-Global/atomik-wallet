@@ -1,12 +1,9 @@
-import { injKaspa, Kaspa } from '@/injectives'
 import { NetworkType } from '@/types'
 import { defineStore } from 'pinia'
-import { computed, inject, readonly, ref } from 'vue'
+import { computed, readonly, ref } from 'vue'
 
 export const useNetworkStore = defineStore('pinia', () => {
-  const kaspa = inject(injKaspa) as Kaspa
-
-  const networkId = ref<NetworkType>(NetworkType.testnet)
+  const networkId = ref<NetworkType>(NetworkType.mainnet)
   const isMainnet = computed(() => networkId.value === NetworkType.mainnet)
   const ticker = computed(() => (isMainnet.value ? 'KAS' : 'TKAS'))
 
@@ -21,8 +18,13 @@ export const useNetworkStore = defineStore('pinia', () => {
     return address.startsWith(prefix)
   }
 
+  const setNetworkId = (value: NetworkType) => {
+    networkId.value = value
+  }
+
   return {
     networkId: readonly(networkId),
+    setNetworkId,
     isMainnet,
     ticker,
     explorerUrl,

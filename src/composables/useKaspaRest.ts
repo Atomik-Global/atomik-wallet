@@ -1,11 +1,10 @@
-import { K_NETWORK, useSecureStorage } from './useSecureStorage'
+import { useNetworkStore } from '@/stores/network'
 
 export function useKaspaRest() {
-  const storage = useSecureStorage()
+  const networkStore = useNetworkStore()
 
   const getApi = async () => {
-    const network = await storage.getItem(K_NETWORK)
-    return network === 'mainnet'
+    return networkStore.isMainnet
       ? 'https://api.kaspa.org'
       : 'https://api-tn10.kaspa.org'
   }
