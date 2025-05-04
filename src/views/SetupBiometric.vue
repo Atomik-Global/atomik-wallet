@@ -47,7 +47,6 @@ async function yes() {
 async function no() {
   await storage.setItem(K_USE_BIOMETRIC, 'false')
   await storage.setItem(K_USER_ONBOARDED, 'true')
-  router.back()
   router.replace('/home')
 }
 </script>

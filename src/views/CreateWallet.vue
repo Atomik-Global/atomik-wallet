@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ClipboardCopy from '@/components/ClipboardCopy.vue'
+import { K_ACCOUNTS, useSecureStorage } from '@/composables/useSecureStorage'
 import { injKaspa, Kaspa } from '@/injectives'
 import { useAccountStore } from '@/stores/account'
 import { useNetworkStore } from '@/stores/network'
@@ -30,6 +31,7 @@ const phrase = ref('')
 const seed = ref('')
 const splitPhrase = computed(() => phrase.value.split(' '))
 const initializing = ref(true)
+const storage = useSecureStorage()
 
 onIonViewWillEnter(() => {
   initializing.value = true
@@ -55,7 +57,12 @@ async function storePhraseAndRedirect() {
 
     const mainnetAccount = await kaspa.createWalletFromSeed(
       seed.value,
-      NetworkType.testnet,
+      NetworkType.mainnet,
+    )
+
+    await storage.setItem(
+      K_ACCOUNTS,
+      JSON.stringify([testnetAccount, mainnetAccount]),
     )
 
     const account = {
