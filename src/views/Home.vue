@@ -39,18 +39,11 @@ const isLoadingTxs = ref(true)
 const isLoadingTxsInBg = ref(false)
 
 onIonViewWillEnter(async () => {
+  isLoadingBalance.value = true
   isLoadingTxs.value = true // show loading after switching account
 
   await accountStore.loadAccounts()
   await kaspa.init()
-
-  await balanceStore.fetchBalance()
-  await balanceStore.fetchUtxos()
-  isLoadingBalance.value = false
-
-  balanceStore.fetchTransactions().then(() => {
-    isLoadingTxs.value = false
-  })
 
   kaspa.trackAddresses({
     addresses: [accountStore.primary!.address],
@@ -72,6 +65,14 @@ onIonViewWillEnter(async () => {
         })
       }, 5000) // 5s (sweetspot), wait for the indexer
     },
+  })
+
+  await balanceStore.fetchBalance()
+  await balanceStore.fetchUtxos()
+  isLoadingBalance.value = false
+
+  balanceStore.fetchTransactions().then(() => {
+    isLoadingTxs.value = false
   })
 })
 

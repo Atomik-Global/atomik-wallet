@@ -3,6 +3,7 @@ import CreateAccountModal from '@/components/Account/CreateAccountModal.vue'
 import ActionFooter from '@/components/ActionFooter.vue'
 import { WalletAccount } from '@/composables/useKaspa'
 import { useAccountStore } from '@/stores/account'
+import { useBalanceStore } from '@/stores/balance'
 import { shortenKaspaAddress } from '@/utils/helpers'
 import {
   IonBackButton,
@@ -25,14 +26,13 @@ import { ref } from 'vue'
 
 const router = useIonRouter()
 const accountStore = useAccountStore()
+const balanceStore = useBalanceStore()
 const isCreateAccountModalOpen = ref(false)
 
 const switchAccount = async (account: WalletAccount) => {
   await accountStore.setPrimary(account)
+  balanceStore.balanceRaw = 0n
   router.back()
-  // await balanceStore.fetchBalance()
-  // await balanceStore.fetchUtxos()
-  // await balanceStore.fetchTransactions()
 }
 </script>
 
