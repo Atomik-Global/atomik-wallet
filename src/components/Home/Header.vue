@@ -32,6 +32,7 @@ const address = computed(() => accountStore.primary?.address ?? '')
     </div>
     <div class="account-action-button">
       <IonButton
+        :disabled="loading"
         size="large"
         shape="round"
         color="light"
