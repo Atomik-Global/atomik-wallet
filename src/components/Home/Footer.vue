@@ -8,7 +8,7 @@ import {
   IonText,
   useIonRouter,
 } from '@ionic/vue'
-import { home, list, scanCircle } from 'ionicons/icons'
+import { grid, home, scanCircle } from 'ionicons/icons'
 import { inject } from 'vue'
 
 const kaspa = inject(injKaspa) as Kaspa
@@ -71,7 +71,7 @@ const scan = async () => {
         </IonButton>
       </div>
       <div class="footer-nav-items" @click="onClickAsset">
-        <IonIcon :icon="list" class="footer-nav-items-icon" />
+        <IonIcon :icon="grid" class="footer-nav-items-icon" />
       </div>
     </div>
   </div>
@@ -108,7 +108,7 @@ const scan = async () => {
 
 .footer-nav-items-icon {
   font-size: 1.5rem;
-  opacity: 30%;
+  opacity: 20%;
 }
 
 .footer-nav-items-icon.active {
