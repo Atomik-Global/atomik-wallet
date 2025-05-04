@@ -30,7 +30,6 @@ async function yes() {
     await biometric.authenticate()
     await storage.setItem(K_USE_BIOMETRIC, 'true')
     await storage.setItem(K_USER_ONBOARDED, 'true')
-    router.back()
     router.replace('/home')
   } catch (error) {
     console.error(error)
