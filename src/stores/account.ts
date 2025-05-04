@@ -92,10 +92,10 @@ export const useAccountStore = defineStore('account', () => {
     return exists || name.toLowerCase() === 'primary account'
   }
 
-  const createAccount = async (name: string) => {
+  const createAccount = async (name: string, networkId: string) => {
     const mnemonic = await kaspa.generateMnemonic()
     const seed = mnemonic.toSeed()
-    const account = await kaspa.createWalletFromSeed(seed)
+    const account = await kaspa.createWalletFromSeed(seed, networkId)
     const newList = [...accounts.value, { ...account, name } as WalletAccount]
 
     await storage.setItem(K_ACCOUNTS, JSON.stringify(newList))

@@ -2,7 +2,6 @@ import type * as k from '@/kaspa/kaspa'
 import url from '@/kaspa/kaspa_bg.wasm?url'
 import {
   AddressEventListenerProps,
-  NetworkOption,
   TrackAddressProps,
   WalletAccount,
 } from '@/types'
@@ -15,7 +14,7 @@ export const injectiveKAS = () => {
   const context = shallowRef<k.UtxoContext>()
   const trackedAddresses = ref<string[]>([])
 
-  async function init(networkId: NetworkOption) {
+  async function init(networkId: string) {
     kaspa.value = await import(
       /* @vite-ignore */ new URL('../kaspa/kaspa.js', import.meta.url).href
     )
@@ -72,7 +71,7 @@ export const injectiveKAS = () => {
 
   async function createWalletFromSeed(
     seed: string,
-    networkId: NetworkOption,
+    networkId: string,
   ): Promise<WalletAccount> {
     const xprv = new kaspa.value!.XPrv(seed).derivePath("m/44'/23'/0'/0/0")
     const priv = xprv.toPrivateKey()

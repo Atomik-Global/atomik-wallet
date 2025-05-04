@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useAccountStore } from '@/stores/account'
+import { useNetworkStore } from '@/stores/network'
 import {
   IonButton,
   IonInput,
@@ -12,6 +13,7 @@ import { computed, ref } from 'vue'
 
 const model = defineModel({ type: Boolean, default: false })
 
+const networkStore = useNetworkStore()
 const accountStore = useAccountStore()
 
 const name = ref('')
@@ -31,7 +33,7 @@ const isCreatingAccount = ref(false)
 const createAccount = async () => {
   try {
     isCreatingAccount.value = true
-    await accountStore.createAccount(name.value)
+    await accountStore.createAccount(name.value, networkStore.networkId)
     model.value = false
     name.value = ''
   } catch (error) {
