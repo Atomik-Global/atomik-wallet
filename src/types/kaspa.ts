@@ -2,6 +2,7 @@ import type { UtxoProcessorEvent, UtxoProcessorEventMap } from '@/kaspa/kaspa'
 
 export interface WalletAccount {
   name?: string
+  seed: string
   address: string
   pubkey: string
   privkey: string

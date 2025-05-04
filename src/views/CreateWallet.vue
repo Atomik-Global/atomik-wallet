@@ -12,6 +12,7 @@ import {
   IonHeader,
   IonPage,
   IonRow,
+  IonSkeletonText,
   IonSpinner,
   IonText,
   IonTitle,
@@ -27,11 +28,16 @@ const accountStore = useAccountStore()
 const phrase = ref('')
 const seed = ref('')
 const splitPhrase = computed(() => phrase.value.split(' '))
+const initializing = ref(true)
 
 onIonViewWillEnter(() => {
-  kaspa.generateMnemonic().then((mnemonic) => {
-    phrase.value = mnemonic.phrase
-    seed.value = mnemonic.toSeed()
+  initializing.value = true
+  kaspa.init().then(() => {
+    kaspa.generateMnemonic().then((mnemonic) => {
+      phrase.value = mnemonic.phrase
+      seed.value = mnemonic.toSeed()
+    })
+    initializing.value = false
   })
 })
 
@@ -80,13 +86,18 @@ async function storePhraseAndRedirect() {
 
       <div class="mt-4">
         <IonGrid>
-          <IonRow>
+          <IonRow v-if="!initializing">
             <IonCol v-for="(item, i) in splitPhrase" :key="item" size="4">
               <div class="phrase-item">
                 <IonText>
                   {{ (i + 1).toString().padStart(2, '0') }}. {{ item }}
                 </IonText>
               </div>
+            </IonCol>
+          </IonRow>
+          <IonRow v-else>
+            <IonCol v-for="i in 12" :key="i" size="4">
+              <IonSkeletonText animated class="skeleton-phrase-item" />
             </IonCol>
           </IonRow>
         </IonGrid>
@@ -120,6 +131,11 @@ async function storePhraseAndRedirect() {
 
 .mt-4 {
   margin-top: 1rem;
+}
+
+.skeleton-phrase-item {
+  height: 2rem;
+  border-radius: 99rem;
 }
 
 .phrase-item {

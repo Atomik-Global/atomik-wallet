@@ -52,12 +52,14 @@ export const injectiveKAS = () => {
     context.value = new kas.UtxoContext({
       processor: processor.value,
     })
+  }
 
-    if (!rpc.value.isConnected) {
-      await rpc.value.connect()
-      if (processor.value.isActive) {
-        await processor.value.stop()
-        await processor.value.start()
+  async function connectRpc() {
+    if (!rpc.value?.isConnected) {
+      await rpc.value?.connect()
+      if (processor.value?.isActive) {
+        await processor.value?.stop()
+        await processor.value?.start()
       }
     }
   }
@@ -82,6 +84,7 @@ export const injectiveKAS = () => {
     const addr = pubk.toAddress(networkId.value)
 
     return {
+      seed,
       address: addr.toString(),
       pubkey: pubk.toString(),
       privkey: priv.toString(),
@@ -216,6 +219,7 @@ export const injectiveKAS = () => {
 
   return {
     init,
+    connectRpc,
     dispose,
     networkId: readonly(networkId),
     isMainnet,

@@ -44,6 +44,7 @@ onIonViewWillEnter(async () => {
 
   await accountStore.loadAccounts()
   await kaspa.init()
+  await kaspa.connectRpc()
 
   kaspa.trackAddresses({
     addresses: [accountStore.primary!.address],
