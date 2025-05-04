@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
   IonBackButton,
-  IonButtons,
   IonCol,
   IonContent,
   IonGrid,
@@ -55,16 +54,11 @@ function submit() {
 
 <template>
   <IonPage>
-    <IonHeader translucent>
-      <IonToolbar>
-        <IonButtons slot="start">
-          <IonBackButton />
-        </IonButtons>
-        <IonTitle>Enter your PIN</IonTitle>
-      </IonToolbar>
+    <IonHeader translucent collapse="condense">
+      <IonToolbar />
     </IonHeader>
     <IonContent fullscreen class="ion-padding">
-      <IonHeader collapse="condense">
+      <IonHeader>
         <IonBackButton />
         <IonTitle size="large">Enter your PIN</IonTitle>
         <div v-if="subtitle" class="subtitle">

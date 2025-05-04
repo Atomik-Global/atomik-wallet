@@ -3,9 +3,7 @@ import ClipboardCopy from '@/components/ClipboardCopy.vue'
 import { injKaspa, Kaspa } from '@/injectives'
 import { useAccountStore } from '@/stores/account'
 import {
-  IonBackButton,
   IonButton,
-  IonButtons,
   IonCol,
   IonContent,
   IonGrid,
@@ -65,16 +63,11 @@ async function storePhraseAndRedirect() {
 
 <template>
   <IonPage>
-    <IonHeader translucent>
-      <IonToolbar>
-        <IonButtons slot="start">
-          <IonBackButton />
-        </IonButtons>
-        <IonTitle>Recovery Phrase</IonTitle>
-      </IonToolbar>
+    <IonHeader translucent collapse="condense">
+      <IonToolbar />
     </IonHeader>
     <IonContent fullscreen class="ion-padding">
-      <IonHeader collapse="condense">
+      <IonHeader>
         <IonTitle size="large">Recovery Phrase</IonTitle>
         <div class="subtitle">
           <IonText>

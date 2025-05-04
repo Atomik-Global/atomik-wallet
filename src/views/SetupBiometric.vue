@@ -6,9 +6,7 @@ import {
   useSecureStorage,
 } from '@/composables/useSecureStorage'
 import {
-  IonBackButton,
   IonButton,
-  IonButtons,
   IonContent,
   IonHeader,
   IonPage,
@@ -56,16 +54,11 @@ async function no() {
 
 <template>
   <IonPage>
-    <IonHeader translucent>
-      <IonToolbar>
-        <IonButtons slot="start">
-          <IonBackButton />
-        </IonButtons>
-        <IonTitle>Use Biometric?</IonTitle>
-      </IonToolbar>
+    <IonHeader translucent collapse="condense">
+      <IonToolbar />
     </IonHeader>
     <IonContent fullscreen class="ion-padding">
-      <IonHeader collapse="condense">
+      <IonHeader>
         <IonTitle size="large">Use {{ biometric.biometryType }}?</IonTitle>
         <div class="subtitle">
           <IonText>
