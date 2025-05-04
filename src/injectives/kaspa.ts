@@ -49,10 +49,6 @@ export const injectiveKAS = () => {
   async function connectRpc() {
     if (!rpc.value?.isConnected) {
       await rpc.value?.connect()
-      if (processor.value?.isActive) {
-        await processor.value?.stop()
-        await processor.value?.start()
-      }
     }
   }
 
@@ -105,9 +101,12 @@ export const injectiveKAS = () => {
     addresses,
     onChangeBalance,
   }: TrackAddressProps) {
+    if (processor.value!.isActive) {
+      await processor.value!.stop()
+    }
+
     await processor.value!.start()
     await context.value!.trackAddresses(addresses)
-
     trackedAddresses.value = addresses
     processor.value!.addEventListener((event) => {
       return addressEventListener({ event, onChangeBalance })

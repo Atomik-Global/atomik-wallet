@@ -2,15 +2,20 @@ import {
   K_USER_ONBOARDED,
   useSecureStorage,
 } from '@/composables/useSecureStorage'
+import Splash from '@/views/Splash.vue'
 import { createRouter, createWebHistory } from '@ionic/vue-router'
 import { RouteRecordRaw } from 'vue-router'
-import Onboarding from '../views/Onboarding.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
+    name: 'Splash',
+    component: Splash,
+  },
+  {
+    path: '/onboarding',
     name: 'Onboarding',
-    component: Onboarding,
+    component: () => import('@/views/Onboarding.vue'),
     meta: {
       unOnboardedOnly: true,
     },
@@ -19,16 +24,25 @@ const routes: Array<RouteRecordRaw> = [
     path: '/wallet/create',
     name: 'CreateWallet',
     component: () => import('@/views/CreateWallet.vue'),
+    meta: {
+      unOnboardedOnly: true,
+    },
   },
   {
     path: '/setup/pin',
     name: 'SetupPin',
     component: () => import('@/views/SetupPin.vue'),
+    meta: {
+      unOnboardedOnly: true,
+    },
   },
   {
     path: '/setup/biometric',
     name: 'SetupBiometric',
     component: () => import('@/views/SetupBiometric.vue'),
+    meta: {
+      unOnboardedOnly: true,
+    },
   },
   {
     path: '/home',
