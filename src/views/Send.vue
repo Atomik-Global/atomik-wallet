@@ -254,7 +254,6 @@ async function submit() {
       <IonItem class="mt-4">
         <IonInput
           v-model="amount"
-          autofocus
           class="mt-4"
           placeholder="Amount"
           :label="networkStore.ticker"

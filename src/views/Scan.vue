@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ActionFooter from '@/components/ActionFooter.vue'
-import { injKaspa, Kaspa } from '@/injectives'
+import { useNetworkStore } from '@/stores/network'
 import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning'
 import {
   IonContent,
@@ -10,9 +10,8 @@ import {
   onIonViewWillLeave,
   useIonRouter,
 } from '@ionic/vue'
-import { inject } from 'vue'
 
-const kaspa = inject(injKaspa) as Kaspa
+const networkStore = useNetworkStore()
 
 const scanSingleBarcode = async (): Promise<string> => {
   return new Promise(async (resolve) => {
@@ -23,7 +22,7 @@ const scanSingleBarcode = async (): Promise<string> => {
       async (result) => {
         const address = result.barcodes[0]
 
-        const isValidBarcode = kaspa.isValidAddress(address.rawValue)
+        const isValidBarcode = networkStore.isValidAddress(address.rawValue)
         if (!isValidBarcode) {
           return
         }
