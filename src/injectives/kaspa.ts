@@ -5,7 +5,7 @@ import {
   TrackAddressProps,
   WalletAccount,
 } from '@/types'
-import { computed, InjectionKey, ref, shallowRef } from 'vue'
+import { computed, InjectionKey, readonly, ref, shallowRef } from 'vue'
 
 export const injectiveKAS = () => {
   const kaspa = shallowRef<typeof k>()
@@ -217,9 +217,8 @@ export const injectiveKAS = () => {
   return {
     init,
     dispose,
-    rpc,
+    networkId: readonly(networkId),
     isMainnet,
-    networkId,
     ticker,
     explorerUrl,
     generateMnemonic,
