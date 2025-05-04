@@ -53,7 +53,7 @@ const switchAccount = async (account: WalletAccount) => {
       </IonHeader>
       <IonList>
         <IonItem
-          v-for="account in accountStore.accounts"
+          v-for="account in accountStore.filteredAccounts"
           :key="account.privkey"
           button
           class="mt-4"

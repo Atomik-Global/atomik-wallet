@@ -7,29 +7,22 @@ import { injKaspa, Kaspa } from '@/injectives'
 import { WalletAccount } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, inject, ref } from 'vue'
+import { useNetworkStore } from './network'
 
 export const useAccountStore = defineStore('account', () => {
   const kaspa = inject(injKaspa) as Kaspa
 
   const storage = useSecureStorage()
+  const networkStore = useNetworkStore()
 
   const primary = ref<WalletAccount>()
   const accounts = ref<WalletAccount[]>([])
-
-  // [host] vs [primary]
-  //
-  // [host]
-  // Is the account the user created at first when creating a wallet
-  // on the onboarding page. Indicated by `undefined` on its name.
-  //
-  // [primary]
-  // is the account that is currently set as the default to be displayed
-  // and use thorough the app.
-  //
-  // Users can switch their [primary] account, but cannot remove or change
-  // the [host] account.
-  const host = computed(() => {
-    return accounts.value.find((e) => e.name === undefined)
+  const filteredAccounts = computed(() => {
+    return accounts.value.filter((e) => {
+      return e.address.startsWith(
+        networkStore.isMainnet ? 'kaspa:' : 'kaspatest:',
+      )
+    })
   })
 
   const loadAccounts = async () => {
@@ -103,10 +96,9 @@ export const useAccountStore = defineStore('account', () => {
   }
 
   return {
-    host,
     loadAccounts,
     primary,
-    accounts,
+    filteredAccounts,
     setPrimary,
     isPrimary,
     createAccount,
