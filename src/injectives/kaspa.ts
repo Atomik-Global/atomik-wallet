@@ -1,13 +1,18 @@
-import type * as Kaspa from '@/kaspa/kaspa'
+import type * as k from '@/kaspa/kaspa'
 import url from '@/kaspa/kaspa_bg.wasm?url'
-import { computed, ref, shallowRef } from 'vue'
+import {
+  AddressEventListenerProps,
+  TrackAddressProps,
+  WalletAccount,
+} from '@/types'
+import { computed, InjectionKey, ref, shallowRef } from 'vue'
 
-export const useKaspa = () => {
-  const kaspa = shallowRef<typeof Kaspa>()
-  const rpc = shallowRef<Kaspa.RpcClient>()
+export const injectiveKAS = () => {
+  const kaspa = shallowRef<typeof k>()
+  const rpc = shallowRef<k.RpcClient>()
   const networkId = ref<'mainnet' | 'testnet-10'>('testnet-10')
-  const processor = shallowRef<Kaspa.UtxoProcessor>()
-  const context = shallowRef<Kaspa.UtxoContext>()
+  const processor = shallowRef<k.UtxoProcessor>()
+  const context = shallowRef<k.UtxoContext>()
   const isMainnet = computed(() => networkId.value === 'mainnet')
   const ticker = computed(() => (isMainnet.value ? 'KAS' : 'TKAS'))
   const trackedAddresses = ref<string[]>([])
@@ -136,13 +141,13 @@ export const useKaspa = () => {
     return kaspa.value!.kaspaToSompi(amount) ?? 0n
   }
 
-  function toKas(amount: string | number | bigint | Kaspa.HexString) {
+  function toKas(amount: string | number | bigint | k.HexString) {
     return kaspa.value!.sompiToKaspaString(
       typeof amount === 'string' ? parseFloat(amount) : amount,
     )
   }
 
-  function toKasRaw(amount: string | number | bigint | Kaspa.HexString) {
+  function toKasRaw(amount: string | number | bigint | k.HexString) {
     return Number(amount) / sompiPerKas()
   }
 
@@ -154,14 +159,14 @@ export const useKaspa = () => {
     return rpc.value!.getUtxosByAddresses(addresses)
   }
 
-  function createTransactions(settings: Kaspa.IGeneratorSettingsObject) {
+  function createTransactions(settings: k.IGeneratorSettingsObject) {
     return kaspa.value!.createTransactions({
       ...settings,
       networkId: networkId.value,
     })
   }
 
-  function generateTransaction(data: Kaspa.IGeneratorSettingsObject) {
+  function generateTransaction(data: k.IGeneratorSettingsObject) {
     return new kaspa.value!.Generator({
       ...data,
       networkId: networkId.value,
@@ -179,7 +184,7 @@ export const useKaspa = () => {
   }
 
   async function transferKas(
-    data: Kaspa.IGeneratorSettingsObject,
+    data: k.IGeneratorSettingsObject,
     privateKey: string,
   ) {
     const { transactions, summary } = await kaspa.value!.createTransactions({
@@ -235,22 +240,6 @@ export const useKaspa = () => {
   }
 }
 
-export interface WalletAccount {
-  name?: string
-  address: string
-  pubkey: string
-  privkey: string
-  xpubkey: string
-}
-
-type BalanceChangeCallback = (pending: bigint, mature: bigint) => void
-
-interface TrackAddressProps {
-  addresses: string[]
-  onChangeBalance: BalanceChangeCallback
-}
-
-interface AddressEventListenerProps {
-  event: Kaspa.UtxoProcessorEvent<keyof Kaspa.UtxoProcessorEventMap>
-  onChangeBalance?: BalanceChangeCallback
-}
+const kas = injectiveKAS()
+export type Kaspa = typeof kas
+export const injKaspa = Symbol('KASPA') as InjectionKey<Kaspa>

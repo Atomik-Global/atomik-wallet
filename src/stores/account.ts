@@ -1,10 +1,10 @@
-import { WalletAccount } from '@/composables/useKaspa'
 import {
   K_ACCOUNT_PRIMARY,
   K_ACCOUNTS,
   useSecureStorage,
 } from '@/composables/useSecureStorage'
 import { injKaspa, Kaspa } from '@/injectives'
+import { WalletAccount } from '@/types'
 import { defineStore } from 'pinia'
 import { computed, inject, ref } from 'vue'
 

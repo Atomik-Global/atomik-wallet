@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import CreateAccountModal from '@/components/Account/CreateAccountModal.vue'
 import ActionFooter from '@/components/ActionFooter.vue'
-import { WalletAccount } from '@/composables/useKaspa'
 import { useAccountStore } from '@/stores/account'
 import { useBalanceStore } from '@/stores/balance'
+import { WalletAccount } from '@/types'
 import { shortenKaspaAddress } from '@/utils/helpers'
 import {
   IonBackButton,

@@ -40,8 +40,7 @@ import { createPinia } from 'pinia'
 // @ts-ignore
 import { DynamicScroller } from 'vue-virtual-scroller'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
-import { useKaspa } from './composables/useKaspa'
-import { injKaspa } from './injectives'
+import { injectiveKAS, injKaspa } from './injectives'
 
 const pinia = createPinia()
 
@@ -52,7 +51,7 @@ const app = createApp(App)
   .use(router)
   .use(pinia)
 
-app.provide(injKaspa, useKaspa())
+app.provide(injKaspa, injectiveKAS())
 app.component('DynamicScroller', DynamicScroller)
 
 router.isReady().then(() => {
