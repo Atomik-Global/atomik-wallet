@@ -10,10 +10,10 @@ const canGoBack = computed(() => router.canGoBack())
   <div class="footer ion-padding">
     <IonGrid>
       <IonRow>
-        <IonCol :size="!$slots['default'] ? '12' : '8'">
+        <IonCol v-if="!!$slots['default']" size="8">
           <slot />
         </IonCol>
-        <IonCol v-if="!!$slots['default']" size="4">
+        <IonCol :size="$slots['default'] ? '4' : '12'">
           <IonButton
             v-if="canGoBack"
             color="light"

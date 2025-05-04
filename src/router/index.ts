@@ -39,6 +39,14 @@ const routes: Array<RouteRecordRaw> = [
     },
   },
   {
+    path: '/home/scan',
+    name: 'Scan',
+    component: () => import('@/views/Scan.vue'),
+    meta: {
+      onboardedOnly: true,
+    },
+  },
+  {
     path: '/home/receive',
     name: 'Receive',
     component: () => import('@/views/Receive.vue'),
