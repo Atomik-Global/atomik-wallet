@@ -21,7 +21,9 @@ const router = useIonRouter()
             @click="router.push('/wallet/create')"
             >Create new Wallet</IonButton
           >
-          <IonButton color="light" expand="block">Import from Seed</IonButton>
+          <IonButton disabled color="light" expand="block"
+            >Import Coming Soon</IonButton
+          >
           <IonText>
             <p class="disclaimer">
               By using our services, you have agreed to our <br />
