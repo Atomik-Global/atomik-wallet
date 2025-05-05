@@ -68,13 +68,6 @@ export const injectiveKAS = () => {
     const priv = xprv.toPrivateKey()
     const pubk = priv.toPublicKey()
     const addr = pubk.toAddress(networkId)
-    console.log({
-      path,
-      xprv,
-      priv,
-      pubk,
-      addr,
-    })
 
     return {
       seed,
