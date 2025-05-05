@@ -22,18 +22,12 @@ export const injectiveKAS = () => {
     const kas = kaspa.value!
     await kas.default(url)
 
-    // let url: string | undefined
-    // if (config.public.kaspa.node) {
-    //   url = config.public.kaspa.node
-    // }
-
     await dispose()
 
     rpc.value = new kas.RpcClient({
       encoding: kas.Encoding.Borsh,
       networkId,
       resolver: new kas.Resolver(),
-      // url,
     })
 
     processor.value = new kas.UtxoProcessor({
@@ -69,10 +63,18 @@ export const injectiveKAS = () => {
     seed: string,
     networkId: string,
   ): Promise<WalletAccount> {
-    const xprv = new kaspa.value!.XPrv(seed).derivePath("m/44'/23'/0'/0/0")
+    const path = "m/44'/111111'/0'/0/0"
+    const xprv = new kaspa.value!.XPrv(seed).derivePath(path)
     const priv = xprv.toPrivateKey()
     const pubk = priv.toPublicKey()
     const addr = pubk.toAddress(networkId)
+    console.log({
+      path,
+      xprv,
+      priv,
+      pubk,
+      addr,
+    })
 
     return {
       seed,
