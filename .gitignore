@@ -33,3 +33,6 @@ npm-debug.log*
 
 resources/ios/**/*
 resources/android/**/*
+
+.env
+.env.*

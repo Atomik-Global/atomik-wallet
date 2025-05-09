@@ -7,6 +7,7 @@ export interface WalletAccount {
   pubkey: string
   privkey: string
   xpubkey: string
+  xprv: string
 }
 
 export type BalanceChangeCallback = (pending: bigint, mature: bigint) => void

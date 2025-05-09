@@ -2,10 +2,17 @@ import type * as k from '@/kaspa/kaspa'
 import url from '@/kaspa/kaspa_bg.wasm?url'
 import {
   AddressEventListenerProps,
+  NetworkType,
   TrackAddressProps,
   WalletAccount,
 } from '@/types'
 import { InjectionKey, ref, shallowRef } from 'vue'
+
+const K_DERIVATION_PATH = "m/44'/111111'/0'"
+
+const buildDerivationPath = (index = 0, type = 0) => {
+  return `${K_DERIVATION_PATH}/${type}/${index}`
+}
 
 export const injectiveKAS = () => {
   const kaspa = shallowRef<typeof k>()
@@ -24,10 +31,15 @@ export const injectiveKAS = () => {
 
     await dispose()
 
+    const nodeURL =
+      networkId == NetworkType.mainnet
+        ? import.meta.env.VITE_KASPA_NODE_URL_MAINNET
+        : import.meta.env.VITE_KASPA_NODE_URL_TESTNET
+
     rpc.value = new kas.RpcClient({
       encoding: kas.Encoding.Borsh,
       networkId,
-      resolver: new kas.Resolver(),
+      url: nodeURL,
     })
 
     processor.value = new kas.UtxoProcessor({
@@ -63,7 +75,7 @@ export const injectiveKAS = () => {
     seed: string,
     networkId: string,
   ): Promise<WalletAccount> {
-    const path = "m/44'/111111'/0'/0/0"
+    const path = buildDerivationPath(0)
     const xprv = new kaspa.value!.XPrv(seed).derivePath(path)
     const priv = xprv.toPrivateKey()
     const pubk = priv.toPublicKey()
@@ -75,6 +87,34 @@ export const injectiveKAS = () => {
       pubkey: pubk.toString(),
       privkey: priv.toString(),
       xpubkey: pubk.toXOnlyPublicKey().toString(),
+      xprv: xprv.intoString('xprv'),
+    }
+  }
+
+  function createAccountDerived(
+    seed: string,
+    xprv: string,
+    index: number,
+    networkId: string,
+  ) {
+    const path = buildDerivationPath(index)
+    const pkGenerator = new kaspa.value!.PrivateKeyGenerator(
+      xprv,
+      false,
+      BigInt(index),
+    )
+
+    const pk = pkGenerator.receiveKey(index)
+    const pb = pk.toPublicKey()
+    const addr = pb.toAddress(networkId)
+
+    return {
+      seed,
+      address: addr.toString(),
+      pubkey: pb.toString(),
+      privkey: pk.toString(),
+      xpubkey: pb.toXOnlyPublicKey().toString(),
+      xprv,
     }
   }
 
@@ -226,6 +266,7 @@ export const injectiveKAS = () => {
     createTransactions,
     getBalanceByAddress,
     generateTransaction,
+    createAccountDerived,
   }
 }
 
