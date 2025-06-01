@@ -1,3 +1,5 @@
+# !!! EXPERIMENTAL !!! DO NOT USE FOR DAILY DRIVER
+
 # Atomik Wallet
 
 _A cross-platform wallet app made for payment on Kaspa network._
